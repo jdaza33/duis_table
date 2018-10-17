@@ -10,6 +10,7 @@
   "dependencies": {
     "@opentok/client": "^2.14.8",
     "express": "^4.16.4",
+    "greenlock-express": "^2.4.6",
     "promise-polyfill": "^8.1.0",
     "vue": "^2.5.17",
     "vue-router": "^3.0.1",
