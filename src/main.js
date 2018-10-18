@@ -4,23 +4,56 @@ import 'whatwg-fetch';
 
 import Vue from 'vue'
 import App from './App.vue'
-import Session from './Session.vue'
+//import Session from './Session.vue'
 import router from './router'
+import VueCookie from 'vue-cookie'
+import logger from 'vuejs-logger'
+import Chat from 'vue-beautiful-chat'
+
+
+//Buefy
+import Buefy from 'buefy'
+
+//CSS Buefy
+import 'buefy/dist/buefy.css'
+
+//Config
+
+Vue.use(VueCookie)
+Vue.use(Buefy, {
+  defaultDayNames: ['D', 'L', 'M', 'Mi', 'J', 'V', 'S'],
+  defaultMonthNames: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
+  defaultFirstDayOfWeek: 1,
+  defaultDateFormatter: date => date.toLocaleDateString('es-ES')
+})
+
+//Chat
+Vue.use(Chat)
+
+
+const loggerOptions = {
+  // optional : defaults to true if not specified
+  isEnabled: true,
+  // required ['debug', 'info', 'warn', 'error', 'fatal']
+  logLevel: 'debug',
+  // optional : defaults to false if not specified
+  stringifyArguments: false,
+  // optional : defaults to false if not specified
+  showLogLevel: false,
+  // optional : defaults to false if not specified
+  showMethodName: false,
+  // optional : defaults to '|' if not specified
+  separator: '|',
+  // optional : defaults to false if not specified
+  showConsoleColors: false
+}
+
+Vue.use(logger, loggerOptions)
 
 Vue.config.productionTip = false
 
-const apiKey = '46204402';
-const sessionId = '2_MX40NjIwNDQwMn5-MTUzOTc0ODM0NjAxMH41VkhXUm4rdjNSMHEyMWxUYU80VEZacGh-QX4';
-const token = 'T1==cGFydG5lcl9pZD00NjIwNDQwMiZzaWc9MDk1YmU1NGU0MjFlNWJkMTA0NDZlMTZkMTBmZWZmNjQxZjA0NDU3NzpzZXNzaW9uX2lkPTJfTVg0ME5qSXdORFF3TW41LU1UVXpPVGMwT0RNME5qQXhNSDQxVmtoWFVtNHJkak5TTUhFeU1XeFVZVTgwVkVaYWNHaC1RWDQmY3JlYXRlX3RpbWU9MTUzOTc0ODM0NiZyb2xlPW1vZGVyYXRvciZub25jZT0xNTM5NzQ4MzQ2LjAxMzYxNzQwMjI5MzY4JmV4cGlyZV90aW1lPTE1NDAzNTMxNDYmY29ubmVjdGlvbl9kYXRhPW5hbWUlM0RKb2hubnk=';
-
 new Vue({
   router,
-  render: h => h(Session, {
-    props: {
-      sessionId,
-      apiKey,
-      token
-    }
-  })
+  render: h => h(App)
 }).$mount('#app');
 

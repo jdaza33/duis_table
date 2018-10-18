@@ -18,21 +18,16 @@ const errorHandler = (err) => {
 
 export default {
   name: 'session',
-  components: { Publisher, Subscriber },
-  props: {
-    sessionId: {
-      type: String,
-      required: true
-    },
-    token: {
-      type: String,
-      required: true
-    },
-    apiKey: {
-      type: String,
-      required: true
-    },
+  data(){
+    return{
+      apiKey: '46204402',
+      sessionId: '2_MX40NjIwNDQwMn5-MTUzOTgxNjIzOTg1Nn4zaFBSZDQ0VHNuZG5sOFgvbFpLN3l1cHV-QX4',
+      token: 'T1==cGFydG5lcl9pZD00NjIwNDQwMiZzaWc9MzE5Y2I5MWIzNjY2MWNjY2JjYTQyN2M2Y2U1ZjNiYTI2ZWUwZDkyMDpzZXNzaW9uX2lkPTJfTVg0ME5qSXdORFF3TW41LU1UVXpPVGd4TmpJek9UZzFObjR6YUZCU1pEUTBWSE51Wkc1c09GZ3ZiRnBMTjNsMWNIVi1RWDQmY3JlYXRlX3RpbWU9MTUzOTgxNjIzOSZyb2xlPW1vZGVyYXRvciZub25jZT0xNTM5ODE2MjM5Ljg5NDExNzY5NDg0MTEzJmV4cGlyZV90aW1lPTE1NDA0MjEwMzkmY29ubmVjdGlvbl9kYXRhPW5hbWUlM0RKb2hubnk=',
+      streams: [],
+      session: null,
+    }
   },
+  components: { Publisher, Subscriber },
   created () {
     this.session = OT.initSession(this.apiKey, this.sessionId);
     this.session.connect(this.token, (err) => {
@@ -40,6 +35,7 @@ export default {
         errorHandler(err);
       }
     });
+    
     this.session.on('streamCreated', (event) => {
       this.streams.push(event.stream);
     });
@@ -50,21 +46,9 @@ export default {
       }
     });
   },
-  data: () => ({
-    streams: [],
-    session: null,
-  }),
   methods: {
     errorHandler
   }
 };
 </script>
 
-<style>
-  .OT_subscriber {
-    float: left;
-  }
-  .OT_publisher {
-    float: left;
-  }
-</style>
