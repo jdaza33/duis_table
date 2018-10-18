@@ -15,7 +15,12 @@
           <div class="column is-3">
                <div class="card">
                     <div class="card-content">
-                         <subscriber @error="errorHandler" :stream="streams[0]" :session="session"></subscriber>
+                         <div id="subscribers" v-for="stream in streams" :key="stream.streamId" v-if="streams.length > 0">
+                              <subscriber @error="errorHandler" :opts="opts" :stream="stream" :session="session"></subscriber>
+                         </div>
+                         <div v-else>
+                              <p class="title is-6">Esperando...</p>
+                         </div>
                     </div>
                     <div class="card-content">
                          <publisher :session="session" :opts="opts" @error="errorHandler"></publisher>
