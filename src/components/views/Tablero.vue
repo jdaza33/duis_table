@@ -115,7 +115,7 @@ export default {
       },
 
       //Config Table
-      isClass: true,
+      isClass: false,
       isModalClassActive: false,
 
       //Config Class
