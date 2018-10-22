@@ -11,6 +11,8 @@
     "@opentok/client": "^2.14.8",
     "axios": "^0.18.0",
     "buefy": "^0.7.0",
+    "camo": "^0.12.3",
+    "cors": "^2.8.4",
     "express": "^4.16.4",
     "greenlock-express": "^2.4.6",
     "nedb": "^1.8.0",

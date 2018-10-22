@@ -25,22 +25,22 @@
 
         <div class="columns is-gapless is-multiline is-mobile">
 
-          <div class="column is-one-quarter">
+          <div class="column is-one-quarter" v-for="(i,j) in dataClass" :key="j">
             <div class="card class">
               <div class="card-header">
-                <p class="card-header-title">Clase de Matematicas</p>
+                <p class="card-header-title">{{i.name}}</p>
                 <a class="card-header-icon" aria-label="more options">
                   <b-icon :type="{ 'is-success': true }" icon="circle" pack="fas"></b-icon>
                 </a>
               </div>
               <div class="card-content">
-                <strong>Tema: </strong>Derivadas <br>
-                <strong>Profesor(a): </strong>José Daza <br>
-                <strong>Fecha inicio: </strong> 01/11/2018 <br>
-                <strong>Fecha fin: </strong> 02/11/2018
+                <strong>Tema: </strong>{{i.topic}} <br>
+                <strong>Profesor(a): </strong>{{i.teacher}} <br>
+                <strong>Fecha inicio: </strong> {{i.date_start.substring(0,10)}} <br>
+                <strong>Fecha fin: </strong> {{i.date_end.substring(0,10)}}
               </div>
               <div class="card-footer">
-                <a class="card-footer-item"><strong>Tomar esta clase..</strong></a>
+                <a @click="assignClas(i.sessionId, i.token)" class="card-footer-item"><strong>Tomar esta clase..</strong></a>
               </div>
             </div>
           </div>
@@ -70,12 +70,9 @@
         <div class="column is-3">
               <div class="card">
                   <div class="card-content">
-                        <div id="subscribers" v-for="stream in streams" :key="stream.streamId" v-if="streams.length > 0">
-                            <subscriber @error="errorHandler" :opts="opts" :stream="stream" :session="session"></subscriber>
-                        </div>
-                        <div v-else>
-                            <p class="title is-6">Esperando...</p>
-                        </div>
+                      <div id="subscribers" v-for="stream in streams" :key="stream.streamId">
+                          <subscriber @error="errorHandler" :stream="stream" :session="session"></subscriber>
+                      </div>
                   </div>
                   <div class="card-content">
                         <publisher :session="session" :opts="opts" @error="errorHandler"></publisher>
@@ -94,6 +91,7 @@ import Publisher from "@/components/opentok/Publisher.vue";
 import Subscriber from "@/components/opentok/Subscriber.vue";
 import Chat from "@/components/views/Chat.vue";
 import Class from '@/components/views/Class.vue';
+import axios from '@/config/axios.js'
 
 const errorHandler = err => {
   alert(err.message);
@@ -103,11 +101,9 @@ export default {
   data() {
     return {
       //OpenTok
-      apiKey: "46204402",
-      sessionId:
-        "2_MX40NjIwNDQwMn5-MTUzOTgxNjIzOTg1Nn4zaFBSZDQ0VHNuZG5sOFgvbFpLN3l1cHV-QX4",
-      token:
-        "T1==cGFydG5lcl9pZD00NjIwNDQwMiZzaWc9MzE5Y2I5MWIzNjY2MWNjY2JjYTQyN2M2Y2U1ZjNiYTI2ZWUwZDkyMDpzZXNzaW9uX2lkPTJfTVg0ME5qSXdORFF3TW41LU1UVXpPVGd4TmpJek9UZzFObjR6YUZCU1pEUTBWSE51Wkc1c09GZ3ZiRnBMTjNsMWNIVi1RWDQmY3JlYXRlX3RpbWU9MTUzOTgxNjIzOSZyb2xlPW1vZGVyYXRvciZub25jZT0xNTM5ODE2MjM5Ljg5NDExNzY5NDg0MTEzJmV4cGlyZV90aW1lPTE1NDA0MjEwMzkmY29ubmVjdGlvbl9kYXRhPW5hbWUlM0RKb2hubnk=",
+      apiKey: process.env.VUE_APP_APIKEY_OPENTOK,
+      token: 'T1==cGFydG5lcl9pZD00NjIwNDQwMiZzaWc9MTg0N2JmZDgzZGM0M2JjODU3MWVlOGI0NWQ1OTA2YmE2NzA0YTI5NjpzZXNzaW9uX2lkPTJfTVg0ME5qSXdORFF3TW41LU1UVTBNREl6TnpRM09EY3hNWDVaS3poNFYxaHVUMFZQYVZwTldWQlhPVGMyYzBVcmRWQi1RWDQmY3JlYXRlX3RpbWU9MTU0MDIzNzQ3OCZyb2xlPW1vZGVyYXRvciZub25jZT0xNTQwMjM3NDc4Ljc0ODEwNzQ0MzMzNDAmZXhwaXJlX3RpbWU9MTU0MDg0MjI3OCZjb25uZWN0aW9uX2RhdGE9bmFtZSUzREpvaG5ueQ==',
+      sessionId: '2_MX40NjIwNDQwMn5-MTU0MDIzNzQ3ODcxMX5ZKzh4V1huT0VPaVpNWVBXOTc2c0UrdVB-QX4',
       streams: [],
       session: null,
       opts: {
@@ -120,11 +116,15 @@ export default {
 
       //Config Table
       isClass: true,
-      isModalClassActive: false
+      isModalClassActive: false,
+
+      //Config Class
+      dataClass: {},
+      today: new Date
     };
   },
   components: { Publisher, Subscriber, Chat, Class },
-  created() {
+  create() {
     this.session = OT.initSession(this.apiKey, this.sessionId);
     this.session.connect(this.token, err => {
       if (err) {
@@ -148,7 +148,41 @@ export default {
       this.videoSource = true;
       this.publishVideo = true;
       this.$forceUpdate();
+    },
+
+    getClass(){
+      axios
+      .get('/class')
+      .then(res => {
+        if(res.data.res){
+          this.dataClass = res.data.class
+        }
+      })
+      .catch(err => {
+        this.$toast.open({
+            message: '[Error] al consultar clases.',
+            type: 'is-danger'
+          })
+      })
+    },
+
+    assignClas(sessionId, token){
+      this.sessionId = sessionId
+      this.token = token
+      this.isClass = false
+      this.$forceUpdate();
     }
+  },
+
+  /*created() {
+    this.getClass();
+  },
+  watch: {
+    $route: "getClass"
+  },*/
+
+  mounted(){
+    //this.getClass()
   }
 };
 </script>
