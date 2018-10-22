@@ -1,90 +1,62 @@
-'use strict';
+const express = require('express')
+const Datastore = require('nedb')
+const cors = require('cors')
 
-//
-// My Secure Server
-//
-var greenlock = require('greenlock-express').create({
+const port = process.env.PORT || 8020
 
-     // Let's Encrypt v2 is ACME draft 11
-     // Note: If at first you don't succeed, stop and switch to staging
-     // https://acme-staging-v02.api.letsencrypt.org/directory
-     server: 'https://acme-v02.api.letsencrypt.org/directory'
-     , version: 'draft-11'
-     // You MUST have write access to save certs
-     , configDir: '~/.config/acme/'
+const app = express()
 
-     // The previous 'simple' example set these values statically,
-     // but this example uses approveDomains() to set them dynamically
-     //, email: 'none@see.note.above'
-     //, agreeTos: false
-
-     // approveDomains is the right place to check a database for
-     // email addresses with domains and agreements and such
-     , approveDomains: approveDomains
-
-     , app: require('./app.js')
-
-     // Get notified of important updates and help me make greenlock better
-     , communityMember: true
-
-     //, debug: true
-
-});
-
-var server = greenlock.listen(8010, 8030);
+//Config
+app.use(express.json())
+app.use(cors())
 
 
-//
-// My Secure Database Check
-//
-function approveDomains(opts, certs, cb) {
+// Database
+let db = new Datastore({ filename: './data.db', autoload: true })
 
-     // The domains being approved for the first time are listed in opts.domains
-     // Certs being renewed are listed in certs.altnames
-     if (certs) {
-          opts.domains = certs.altnames;
-          cb(null, { options: opts, certs: certs });
-          return;
-     }
-
-     // Only one domain is listed with *automatic* registration via SNI
-     // (it's an array because managed registration allows for multiple domains,
-     //                                which was the case in the simple example)
-     console.log(opts.domains);
-
-     fooCheckDb(opts.domains, function (err, agree, email) {
-          if (err) { cb(err); return; }
-
-          // You MUST NOT build clients that accept the ToS without asking the user
-          opts.agreeTos = agree;
-          opts.email = email;
-
-          // NOTE: you can also change other options such as `challengeType` and `challenge`
-          // (this would be helpful if you decided you wanted wildcard support as a domain altname)
-          // opts.challengeType = 'http-01';
-          // opts.challenge = require('le-challenge-fs').create({});
-
-          cb(null, { options: opts, certs: certs });
-     });
-}
+// Static
+app.use(express.static(__dirname + '/dist/'))
 
 
-//
-// My User / Domain Database
-//
-function fooCheckDb(domains, cb) {
-     // This is an oversimplified example of how we might implement a check in
-     // our database if we have different rules for different users and domains
-     var domains = ['app-duis.herokuapp.com', 'www.app-duis.herokuapp.com'];
-     var userEmail = 'blackencio33@gmail.com';
-     var userAgrees = true;
-     var passCheck = opts.domains.every(function (domain) {
-          return -1 !== domains.indexOf(domain);
-     });
+// Router
+app.post('/class', async (req, res) => {
+  console.log('New Class --> ')
+  console.log(req.body)
 
-     if(!passCheck){
-          cb(new Error('domain not allowed'))
-     }else{
-          cb(null, userAgrees, userEmail)
-     }
-}
+  let data = req.body;
+
+  //Model
+  let model = {
+    name: data.name,
+    teacher: data.teacher,
+    topic: data.topic,
+    apiKey: data.apiKey,
+    token: data.token,
+    sessionId: data.sessionId,
+    date_start: data.date_start,
+    date_end: data.date_end
+  }
+
+  await db.insert(model, (err, doc) => {
+    console.log(doc)
+  })
+  res.json({
+    res: true,
+    message: 'Clase creada'
+  })
+})
+
+app.get('/class', async (req, res) => {
+  await db.find({}, (err, doc) => {
+    console.log(doc)
+    res.json({
+      res: true,
+      class: doc
+    })
+  })
+})
+
+// Output
+app.listen(port, () => {
+  console.log(`Server on port ${port}`)
+})

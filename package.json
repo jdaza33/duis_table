@@ -39,6 +39,9 @@
       "autoprefixer": {}
     }
   },
+  "engines": {
+    "node": "8.12.0"
+  },
   "browserslist": [
     "> 1%",
     "last 2 versions",
