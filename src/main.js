@@ -11,11 +11,14 @@ import logger from 'vuejs-logger'
 import Chat from 'vue-beautiful-chat'
 
 
+
 //Buefy
 import Buefy from 'buefy'
 
 //CSS Buefy
 import 'buefy/dist/buefy.css'
+
+
 
 //Config
 
@@ -29,6 +32,8 @@ Vue.use(Buefy, {
 
 //Chat
 Vue.use(Chat)
+
+
 
 
 const loggerOptions = {

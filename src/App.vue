@@ -43,6 +43,14 @@ export default {
   // Import Bulma and Buefy styles
   @import "~bulma";
   @import "~buefy/src/scss/buefy";
+
+</style>
+
+<style>
+.ql-editor {
+    min-height: 500px;
+    max-height: 70vh;
+}
 </style>
 
 

@@ -4,9 +4,21 @@
           <div class="column is-9">
                <section>
                     <b-tabs position="is-centered" type="is-toggle-rounded">
+                         <b-tab-item label="Editor de Texto" icon="edit" icon-pack="fas">
+                           <vue-editor v-model="textEdit" id="editor"></vue-editor>
+                         </b-tab-item>
+                         <b-tab-item label="Editor de Codigo" icon="code" icon-pack="fas">
+                           <brace style="height: 500px" 
+                              :fontsize="'12px'" 
+                              :theme="'monokai'" 
+                              :mode="'javascript'"
+                              :codefolding="'markbegin'"
+                              :softwrap="'free'"
+                              :selectionstyle="'text'"
+                              :highlightline="true">
+                            </brace>
+                         </b-tab-item>
                          <b-tab-item label="Tabla de Dibujo" icon="palette" icon-pack="fas"></b-tab-item>
-                         <b-tab-item label="Editor de Texto" icon="edit" icon-pack="fas"></b-tab-item>
-                         <b-tab-item label="Editor de Codigo" icon="code" icon-pack="fas"></b-tab-item>
                     </b-tabs>
                </section>
                <!--<a @click="connect()" class="button is-vcentered is-primary is-outlined is-rounded">Conectar</a>-->
@@ -16,11 +28,11 @@
                <div class="card">
                     <div class="card-content">
                          <div id="subscribers" v-for="stream in streams" :key="stream.streamId">
-                              <subscriber @error="errorHandler" :opts="optsTwo" :stream="stream" :session="session"></subscriber>
+                              <!--<subscriber @error="errorHandler" :opts="optsTwo" :stream="stream" :session="session"></subscriber>-->
                          </div>
                     </div>
                     <div class="card-content center">
-                         <publisher :session="session" :opts="optsOne" @error="errorHandler"></publisher>
+                         <!--<publisher :session="session" :opts="optsOne" @error="errorHandler"></publisher>-->
                     </div>
                     <div class="card-footer">
                       <a class="card-footer-item">Save</a>
@@ -40,6 +52,10 @@ import OT from "@opentok/client";
 import Publisher from "@/components/opentok/Publisher.vue";
 import Subscriber from "@/components/opentok/Subscriber.vue";
 import Chat from "@/components/views/Chat.vue";
+import { VueEditor } from "vue2-editor";
+
+import Brace from 'vue-bulma-brace'
+
 
 const errorHandler = err => {
   alert(err.message);
@@ -69,12 +85,18 @@ export default {
         videoSource: true,
         height: "80px",
         width: "50%"
-      }
+      },
+
+      //Editor de Texto
+      textEdit: '',
+
+      //Editor de Codigo
+      code: 'const noop = () => {}'
     };
   },
-  components: { Publisher, Subscriber, Chat },
+  components: { Publisher, Subscriber, Chat, VueEditor, Brace},
   created() {
-    this.session = OT.initSession(this.apiKey, this.sessionId);
+   /* this.session = OT.initSession(this.apiKey, this.sessionId);
     this.session.connect(this.token, err => {
       if (err) {
         errorHandler(err);
@@ -88,7 +110,7 @@ export default {
       if (idx > -1) {
         this.streams.splice(idx, 1);
       }
-    });
+    });*/
   },
   methods: {
     errorHandler,
@@ -97,7 +119,10 @@ export default {
       this.videoSource = true;
       this.publishVideo = true;
       this.$forceUpdate();
-    }
+    },
+
+    //Editor de Codigo
+
   }
 };
 </script>
@@ -115,9 +140,15 @@ export default {
   align-items: center;
 }
 
-
-
 </style>
+
+<style>
+.ql-editor {
+    min-height: 500px;
+    max-height: 70vh;
+}
+</style>
+
 
 
 
