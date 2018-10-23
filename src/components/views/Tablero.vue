@@ -15,15 +15,17 @@
           <div class="column is-3">
                <div class="card">
                     <div class="card-content">
-                         <div id="subscribers" v-for="stream in streams" :key="stream.streamId" v-if="streams.length > 0">
-                              <subscriber @error="errorHandler" :opts="opts" :stream="stream" :session="session"></subscriber>
-                         </div>
-                         <div v-else>
-                              <p class="title is-6">Esperando...</p>
+                         <div id="subscribers">
+                              <subscriber @error="errorHandler" :opts="optsTwo" :stream="streams[0]" :session="session"></subscriber>
                          </div>
                     </div>
-                    <div class="card-content">
-                         <publisher :session="session" :opts="opts" @error="errorHandler"></publisher>
+                    <div class="card-content center">
+                         <publisher :session="session" :opts="optsOne" @error="errorHandler"></publisher>
+                    </div>
+                    <div class="card-footer">
+                      <a class="card-footer-item">Save</a>
+                      <a class="card-footer-item">Edit</a>
+                      <a class="card-footer-item">Delete</a>
                     </div>
                </div>
                <chat class="chat"></chat>
@@ -54,12 +56,19 @@ export default {
         "T1==cGFydG5lcl9pZD00NjIwNDQwMiZzaWc9MzE5Y2I5MWIzNjY2MWNjY2JjYTQyN2M2Y2U1ZjNiYTI2ZWUwZDkyMDpzZXNzaW9uX2lkPTJfTVg0ME5qSXdORFF3TW41LU1UVXpPVGd4TmpJek9UZzFObjR6YUZCU1pEUTBWSE51Wkc1c09GZ3ZiRnBMTjNsMWNIVi1RWDQmY3JlYXRlX3RpbWU9MTUzOTgxNjIzOSZyb2xlPW1vZGVyYXRvciZub25jZT0xNTM5ODE2MjM5Ljg5NDExNzY5NDg0MTEzJmV4cGlyZV90aW1lPTE1NDA0MjEwMzkmY29ubmVjdGlvbl9kYXRhPW5hbWUlM0RKb2hubnk=",
       streams: [],
       session: null,
-      opts: {
+      optsTwo: {
         publishAudio: true,
         publishVideo: true,
         videoSource: true,
         height: "150px",
         width: "100%"
+      },
+      optsOne: {
+        publishAudio: true,
+        publishVideo: true,
+        videoSource: true,
+        height: "80px",
+        width: "50%"
       }
     };
   },
