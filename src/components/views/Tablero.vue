@@ -15,8 +15,8 @@
           <div class="column is-3">
                <div class="card">
                     <div class="card-content">
-                         <div id="subscribers">
-                              <subscriber @error="errorHandler" :opts="optsTwo" :stream="streams[0]" :session="session"></subscriber>
+                         <div id="subscribers" v-for="stream in streams" :key="stream.streamId">
+                              <subscriber @error="errorHandler" :opts="optsTwo" :stream="stream" :session="session"></subscriber>
                          </div>
                     </div>
                     <div class="card-content center">
