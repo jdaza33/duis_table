@@ -28,11 +28,11 @@
                <div class="card">
                     <div class="card-content">
                          <div id="subscribers" v-for="stream in streams" :key="stream.streamId">
-                              <!--<subscriber @error="errorHandler" :opts="optsTwo" :stream="stream" :session="session"></subscriber>-->
+                              <subscriber @error="errorHandler" :opts="optsTwo" :stream="stream" :session="session"></subscriber>
                          </div>
                     </div>
                     <div class="card-content center">
-                         <!--<publisher :session="session" :opts="optsOne" @error="errorHandler"></publisher>-->
+                         <publisher :session="session" :opts="optsOne" @error="errorHandler"></publisher>
                     </div>
                     <div class="card-footer">
                       <a class="card-footer-item">Save</a>
@@ -67,9 +67,9 @@ export default {
       //OpenTok
       apiKey: "46204402",
       sessionId:
-        "2_MX40NjIwNDQwMn5-MTUzOTgxNjIzOTg1Nn4zaFBSZDQ0VHNuZG5sOFgvbFpLN3l1cHV-QX4",
+        "2_MX40NjIwNDQwMn5-MTU0MDk4NzM0NzU5OX5xakFQeEJRUG81QVZVTjE0cmNnZkt5Wm5-QX4",
       token:
-        "T1==cGFydG5lcl9pZD00NjIwNDQwMiZzaWc9MzE5Y2I5MWIzNjY2MWNjY2JjYTQyN2M2Y2U1ZjNiYTI2ZWUwZDkyMDpzZXNzaW9uX2lkPTJfTVg0ME5qSXdORFF3TW41LU1UVXpPVGd4TmpJek9UZzFObjR6YUZCU1pEUTBWSE51Wkc1c09GZ3ZiRnBMTjNsMWNIVi1RWDQmY3JlYXRlX3RpbWU9MTUzOTgxNjIzOSZyb2xlPW1vZGVyYXRvciZub25jZT0xNTM5ODE2MjM5Ljg5NDExNzY5NDg0MTEzJmV4cGlyZV90aW1lPTE1NDA0MjEwMzkmY29ubmVjdGlvbl9kYXRhPW5hbWUlM0RKb2hubnk=",
+        "T1==cGFydG5lcl9pZD00NjIwNDQwMiZzaWc9Mjk1NjIwYTIyZjM3MDBhMmI0NmU2M2Q2MDk4MjNjMmM5ZjVhZWU5NjpzZXNzaW9uX2lkPTJfTVg0ME5qSXdORFF3TW41LU1UVTBNRGs0TnpNME56VTVPWDV4YWtGUWVFSlJVRzgxUVZaVlRqRTBjbU5uWmt0NVdtNS1RWDQmY3JlYXRlX3RpbWU9MTU0MDk4NzM0NyZyb2xlPW1vZGVyYXRvciZub25jZT0xNTQwOTg3MzQ3LjYzOTMxMTE2MTQyMTY0JmV4cGlyZV90aW1lPTE1NDE1OTIxNDcmY29ubmVjdGlvbl9kYXRhPW5hbWUlM0RKb2hubnk=",
       streams: [],
       session: null,
       optsTwo: {
