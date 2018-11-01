@@ -4,7 +4,7 @@
 
 <script>
 export default {
-  name: 'subscriber',
+  name: "subscriber",
   props: {
     stream: {
       type: OT.Stream,
@@ -20,14 +20,19 @@ export default {
     }
   },
   mounted: function() {
-    const subscriber = this.session.subscribe(this.stream, this.$el, this.opts, (err) => {
-      if (err) {
-        this.$emit('error', err);
-      } else {
-        this.$emit('subscriberConnected', subscriber);
+    const subscriber = this.session.subscribe(
+      this.stream,
+      this.$el,
+      this.opts,
+      err => {
+        if (err) {
+          this.$emit("error", err);
+        } else {
+          this.$emit("subscriberConnected", subscriber);
+        }
       }
-    });
-    this.$emit('subscriberCreated', subscriber);
+    );
+    this.$emit("subscriberCreated", subscriber);
   }
 };
 </script>
