@@ -9,7 +9,7 @@ import router from './router'
 import VueCookie from 'vue-cookie'
 import logger from 'vuejs-logger'
 import Chat from 'vue-beautiful-chat'
-
+import VuePellEditor from 'vue-pell-editor'
 
 
 //Buefy
@@ -32,6 +32,9 @@ Vue.use(Buefy, {
 
 //Chat
 Vue.use(Chat)
+
+//Editor
+Vue.use(VuePellEditor)
 
 
 
