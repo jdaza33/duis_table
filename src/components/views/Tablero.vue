@@ -18,7 +18,9 @@
                          <b-tab-item label="Editor de Codigo" icon="code" icon-pack="fas">
                             <codemirror v-model="codeEdit" :options="cmOptions" @keyup.native="postCode"></codemirror>
                          </b-tab-item>
-                         <b-tab-item label="Tabla de Dibujo" icon="palette" icon-pack="fas"></b-tab-item>
+                         <b-tab-item label="Tabla de Dibujo" icon="palette" icon-pack="fas">
+                           <msDrawBoard></msDrawBoard>
+                         </b-tab-item>
                     </b-tabs>
                </section>
                <!--<a @click="connect()" class="button is-vcentered is-primary is-outlined is-rounded">Conectar</a>-->
@@ -78,7 +80,7 @@ import Subscriber from "@/components/opentok/Subscriber.vue";
 import Chat from "@/components/views/Chat.vue";
 import pusher from "pusher";
 import axios from '@/config/axios.js'
-import Brace from "vue-bulma-brace";
+import msDrawBoard from 'msdrawboard'
 
 import { codemirror } from 'vue-codemirror'
 import 'codemirror/lib/codemirror.css'
@@ -226,7 +228,7 @@ export default {
       }
     };
   },
-  components: { Chat, Brace, Subscriber, codemirror },
+  components: { Chat, Subscriber, codemirror, msDrawBoard },
 
   created() {
     /*
@@ -281,7 +283,7 @@ export default {
       this.setTextEdit(data)
     });
 
-    this.channel = pusher.subscribe("private-editcode");
+    //this.channel = pusher.subscribe("private-editcode");
     this.channel.bind("client-new-code", data => {
       this.setCode(data)
     });

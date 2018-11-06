@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const Pusher = require('pusher');
 const bodyParser = require('body-parser');
+const Datastore = require('nedb');
 
 const port = process.env.PORT || 8020;
 
@@ -12,6 +13,9 @@ const PUSHER_APP_ID = '629361'
 const PUSHER_APP_KEY = '0f5f2bf6cc6d01e862a4'
 const PUSHER_APP_SECRET = 'a9f057161b4b7a3f3f68'
 const PUSHER_APP_CLUSTER = 'us2'
+
+// Database
+let db = new Datastore({ filename: './data.db', autoload: true });
 
 
 //Config
@@ -33,6 +37,8 @@ const pusher = new Pusher({
 app.use(express.static(__dirname + '/dist/'));
 
 //API
+
+//Pusher 
 app.post('/pusher/auth', function (req, res) {
      let socketId = req.body.socket_id;
      let channel = req.body.channel_name;
@@ -40,6 +46,13 @@ app.post('/pusher/auth', function (req, res) {
      var auth = pusher.authenticate(socketId, channel);
      res.send(auth);
 });
+
+//nedb
+/*app.post('/class/new', (req, res) => {
+	let data = req.body
+
+})*/
+
 
 //Output
 app.listen(port, () => {

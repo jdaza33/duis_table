@@ -4,6 +4,8 @@ import Login from './components/layouts/Login.vue'
 import Panel from './components/layouts/Panel.vue'
 import Session from './components/opentok/Session.vue'
 import Tablero from './components/views/Tablero.vue'
+import ModalClass from './components/views/ModalClass.vue'
+import Class from './components/views/Class.vue'
 
 
 Vue.use(Router)
@@ -22,14 +24,14 @@ export default new Router({
       component: Panel,
       children: [
         {
-          path: 'session',
-          name: 'session',
-          component: Session
-        },
-        {
           path: 'tablero',
           name: 'tablero',
           component: Tablero
+        },
+        {
+          path: 'class',
+          name: 'class',
+          component: Class
         }
       ]
     }
