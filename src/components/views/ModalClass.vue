@@ -67,6 +67,7 @@
 
 <script>
 import axios from '@/config/axios.js'
+import axiostwo from 'axios'
 export default {
   data() {
     const today = new Date()
@@ -75,9 +76,8 @@ export default {
         name: '',
         teacher: '',
         topic: '',
-        apiKey: process.env.VUE_APP_APIKEY_OPENTOK,
-        token: 'T1==cGFydG5lcl9pZD00NjIwNDQwMiZzaWc9MTg0N2JmZDgzZGM0M2JjODU3MWVlOGI0NWQ1OTA2YmE2NzA0YTI5NjpzZXNzaW9uX2lkPTJfTVg0ME5qSXdORFF3TW41LU1UVTBNREl6TnpRM09EY3hNWDVaS3poNFYxaHVUMFZQYVZwTldWQlhPVGMyYzBVcmRWQi1RWDQmY3JlYXRlX3RpbWU9MTU0MDIzNzQ3OCZyb2xlPW1vZGVyYXRvciZub25jZT0xNTQwMjM3NDc4Ljc0ODEwNzQ0MzMzNDAmZXhwaXJlX3RpbWU9MTU0MDg0MjI3OCZjb25uZWN0aW9uX2RhdGE9bmFtZSUzREpvaG5ueQ==',
-        sessionId: '2_MX40NjIwNDQwMn5-MTU0MDIzNzQ3ODcxMX5ZKzh4V1huT0VPaVpNWVBXOTc2c0UrdVB-QX4',
+        token: '',
+        sessionId: '',
         date_start: new Date(),
         date_end: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1)
       }
@@ -86,7 +86,7 @@ export default {
   methods: {
     save(){
       axios
-      .post('/class', this.classroom)
+      .post('/class/new', this.classroom)
       .then(res => {
         if(res.data.res){
           this.$toast.open({
@@ -98,24 +98,19 @@ export default {
       })
       .catch(err => {
         this.$toast.open({
-            message: '[Error] No se pudo guardar la clase',
+            message: '[Error] No se pudo crear la clase',
             type: 'is-danger'
           })
       })
     },
     getKeys(){
-      axios
-      .get('https://duislessonserver.herokuapp.com/api/sessionid')
+      axiostwo
+      .get(`${process.env.VUE_APP_API_TWO_URL}/api/sessionid?_token=${process.env.VUE_APP_API_KEY_OPENTOK}&user_id=${this.$cookie.get('userId')}&session_role=m`)
       .then(res => {
-        /*this.classroom.sessionId = res.data.sessionId
-        this.classroom.token = res.data.token_id*/
-        console.log('yes')
+        this.classroom.sessionId = res.data.sessionId
+        this.classroom.token = res.data.token_id
       })
       .catch(err => {
-        /*this.$toast.open({
-          message: '[Error] No hay conexion con la API OpenTok',
-          type: 'is-danger'
-        })*/
         console.log(err)
       })
       /*axios(url, {
@@ -134,6 +129,9 @@ export default {
   },
   mounted(){
     //this.getKeys()
+  },
+  create(){
+    this.getKeys()
   }
 };
 </script>

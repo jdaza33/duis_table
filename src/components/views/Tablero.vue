@@ -134,11 +134,9 @@ export default {
   data() {
     return {
       //OpenTok
-      apiKey: "46204402",
-      sessionId:
-        "2_MX40NjIwNDQwMn5-MTU0MDk4NzM0NzU5OX5xakFQeEJRUG81QVZVTjE0cmNnZkt5Wm5-QX4",
-      token:
-        "T1==cGFydG5lcl9pZD00NjIwNDQwMiZzaWc9Mjk1NjIwYTIyZjM3MDBhMmI0NmU2M2Q2MDk4MjNjMmM5ZjVhZWU5NjpzZXNzaW9uX2lkPTJfTVg0ME5qSXdORFF3TW41LU1UVTBNRGs0TnpNME56VTVPWDV4YWtGUWVFSlJVRzgxUVZaVlRqRTBjbU5uWmt0NVdtNS1RWDQmY3JlYXRlX3RpbWU9MTU0MDk4NzM0NyZyb2xlPW1vZGVyYXRvciZub25jZT0xNTQwOTg3MzQ3LjYzOTMxMTE2MTQyMTY0JmV4cGlyZV90aW1lPTE1NDE1OTIxNDcmY29ubmVjdGlvbl9kYXRhPW5hbWUlM0RKb2hubnk=",
+      apiKey: process.env.VUE_APP_API_KEY_OPENTOK,
+      sessionId: '',
+      token: '',
       streams: [],
       session: null,
 
@@ -272,8 +270,8 @@ export default {
      INICIO - PUSHER
      */
 
-    let pusher = new Pusher("0f5f2bf6cc6d01e862a4", {
-      cluster: "us2",
+    let pusher = new Pusher(process.env.VUE_APP_API_KEY_PUSHER, {
+      cluster: process.env.VUE_APP_API_CLUSTER_PUSHER,
       encrypted: true,
       authEndpoint: `${process.env.VUE_APP_API_URL}/pusher/auth`
     });

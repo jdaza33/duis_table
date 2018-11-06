@@ -48,10 +48,26 @@ app.post('/pusher/auth', function (req, res) {
 });
 
 //nedb
-/*app.post('/class/new', (req, res) => {
+app.post('/class/new', (req, res) => {
 	let data = req.body
+    db.insert(data, (err, doc) => {
+        if(err){
+            console.log('ERROR', err)
+        }
+        console.log('Clase creada --> ', doc)
+    });
+})
 
-})*/
+app.get('/class', async (req, res) => {
+    await db.find({}, (err, doc) => {
+        if(err) console.log(err)
+        console.log(doc);
+        res.json({
+            res: true,
+            class: doc
+        });
+    });
+  });
 
 
 //Output

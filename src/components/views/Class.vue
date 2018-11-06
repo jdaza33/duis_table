@@ -93,6 +93,10 @@ import ModalClass from '@/components/views/ModalClass';
         })
       },
 
+    },
+
+    mounted(){
+      this.getClass()
     }
   }
 </script>
