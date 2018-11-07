@@ -3,7 +3,7 @@
 
   <nav class="navbar">
       <div class="navbar-brand">
-         <a class="navbar-item" @click="go('home')">
+         <a class="navbar-item" @click="go('login')">
             <img src="img/duis-min.png" width="30" height="28">
             <h1 class="title is-3 titlecolor">Duis</h1>
          </a>
@@ -53,7 +53,7 @@
 
             <b-dropdown  position="is-bottom-left">
                <a class="navbar-item is-info" slot="trigger">
-                     <span>J. Daza</span>
+                     <span>{{username}}</span>
                      <b-icon icon="caret-down" pack="fas"></b-icon>
                </a>
                <b-dropdown-item value="logout" @click="logout()">
@@ -110,6 +110,13 @@ export default {
   },
   methods: {
     logout() {
+      this.$cookie.delete('userId')
+      this.$cookie.delete('username')
+
+      this.$cookie.delete('sessionId')
+      this.$cookie.delete('token')
+      this.$cookie.delete('classId')
+
       this.go('login');
     },
 
@@ -132,10 +139,15 @@ export default {
       }
       //this.go('users')
     },
+
+    loadDataUser(){
+      this.username = this.$cookie.get('username')
+      this.userId = this.$cookie.get('userId')
+    }
   },
 
   created() {
-    //this.loadDataUser();
+    this.loadDataUser();
   },
   watch: {
     //$route: "loadDataUser"

@@ -62,6 +62,7 @@
             <a @click="save()" class="button is-vcentered is-success is-rounded">Guardar</a>
           </footer>
         </div>
+        <b-loading :is-full-page="isFullPage" :active.sync="isLoading"></b-loading>
      </div>
 </template>
 
@@ -72,6 +73,8 @@ export default {
   data() {
     const today = new Date()
     return {
+      isLoading: false,
+      isFullPage: true,
       classroom: {
         name: '',
         teacher: '',
@@ -104,16 +107,19 @@ export default {
       })
     },
     getKeys(){
+      this.isLoading = true
       axiostwo
       .get(`${process.env.VUE_APP_API_TWO_URL}/api/sessionid?_token=${process.env.VUE_APP_API_KEY_OPENTOK}&user_id=${this.$cookie.get('userId')}&session_role=m`)
       .then(res => {
-        this.classroom.sessionId = res.data.sessionId
+        this.isLoading = false
+        this.classroom.sessionId = res.data.session_id
         this.classroom.token = res.data.token_id
       })
       .catch(err => {
+        this.isLoading = false
         console.log(err)
       })
-      /*axios(url, {
+      /*axiostwo(`${process.env.VUE_APP_API_TWO_URL}/api/sessionid?_token=${process.env.VUE_APP_API_KEY_OPENTOK}&user_id=${this.$cookie.get('userId')}&session_role=m`, {
         method: 'GET',
         mode: 'no-cors',
         headers: {
@@ -123,15 +129,21 @@ export default {
         withCredentials: true,
         credentials: 'same-origin',
       }).then(response => {
+        this.isLoading = false
+        this.classroom.sessionId = res.data.sessionId
+        this.classroom.token = res.data.token_id
+      }).catch(err => {
+        this.isLoading = false
+        console.log(err)
       })*/
       
     }
   },
   mounted(){
-    //this.getKeys()
+    this.getKeys()
   },
   create(){
-    this.getKeys()
+    //this.getKeys()
   }
 };
 </script>

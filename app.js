@@ -3,6 +3,7 @@ const cors = require('cors');
 const Pusher = require('pusher');
 const bodyParser = require('body-parser');
 const Datastore = require('nedb');
+const Chatkit = require('@pusher/chatkit-server')
 
 const port = process.env.PORT || 8020;
 
@@ -13,6 +14,11 @@ const PUSHER_APP_ID = '629361'
 const PUSHER_APP_KEY = '0f5f2bf6cc6d01e862a4'
 const PUSHER_APP_SECRET = 'a9f057161b4b7a3f3f68'
 const PUSHER_APP_CLUSTER = 'us2'
+
+const chatkit = new Chatkit.default({
+	instanceLocator: 'v1:us1:8bd51fc5-238c-41f3-9cf4-d998d087171b',
+	key: 'eea44c7e-758b-4bd1-a80f-dc653bd998b6:wiY1M8QhAbrA+7xKV/eE72crcO3cA8W0BTCknb5jL2k=',
+})
 
 // Database
 let db = new Datastore({ filename: './data.db', autoload: true });
@@ -47,6 +53,111 @@ app.post('/pusher/auth', function (req, res) {
      res.send(auth);
 });
 
+//Chatkit pusher
+
+app.post('/user/create', (req, res) => {
+     let user = req.body
+     chatkit.createUser({
+		id: user.id,
+		name: user.name,
+     })
+	.then(() => {
+	   console.log('User created successfully');
+	   res.json({
+	        res: true,
+	        message: 'Usuario creado'
+	   })
+	}).catch((err) => {
+	   console.log(err);
+	   res.json({
+	        res: false,
+	        message: 'Usuario no creado',
+	        err
+	   })
+	});
+})
+
+app.get('/user/:id', async (req, res) => {
+	let userId = req.params.id
+	await db.find({_id: userId}, (err, doc) => {
+        if(err) console.log(err)
+        console.log(doc);
+        res.json({
+            doc
+        });
+    });
+})
+
+app.post('/room/new', (req, res) => {
+     let room = req.body
+     chatkit.createRoom({
+		creatorId: room.id,
+		name: room.name,
+     })
+	.then(() => {
+	   console.log('Room created successfully');
+	   res.json({
+	        res: true,
+	        message: 'Clase creada'
+	   })
+	}).catch((err) => {
+	   console.log(err);
+	   res.json({
+	        res: false,
+	        message: 'Clase no creada',
+	        err
+	   })
+	});
+})
+
+app.post('/message/send', (req, res) => {
+     let message = req.body
+     chatkit.sendMessage({
+		userId: message.userId,
+		roomId: message.roomId,
+		text: message.message,
+     })
+	.then(res => {
+	   console.log('sent message with id', res.id)
+	   res.json({
+	        res: true,
+	        message: 'Mensaje enviado'
+	   })
+	})
+	.catch(err => {
+	   console.error(err)
+	   res.json({
+	        res: true,
+	        message: 'Mensaje enviado'
+	   })
+	})
+})
+
+app.get('/message/received/:roomId', (req, res) => {
+     
+     chatkit.getRoomMessages({
+		roomId: req.params.roomId,
+		limit: 100,
+     })
+	.then(messages => {
+	   console.log('got last 10 messages')
+	   for (let m of messages) {
+	        renderMessage(m)
+	   }
+	   return chatkit.getRoomMessages({
+	        roomId: req.params.roomId,
+	        initialId: res[messages.length - 1].id,
+	   })
+	})
+	.then(moreMessages => {
+	   console.log('got the next 10 messages before them')
+	   for (let m of moreMessages) {
+	        renderMessage(m)
+	   }
+	})
+	.catch(err => console.error(err))
+})
+
 //nedb
 app.post('/class/new', (req, res) => {
 	let data = req.body
@@ -55,6 +166,9 @@ app.post('/class/new', (req, res) => {
             console.log('ERROR', err)
         }
         console.log('Clase creada --> ', doc)
+        res.json({
+        	res: true
+        })
     });
 })
 

@@ -14,7 +14,8 @@
                 icon="user"
                 maxlength="12"
                 min="5"
-                rounded>
+                rounded
+                v-model="user.username">
             </b-input>
         </b-field>
 
@@ -24,12 +25,13 @@
                 icon-pack="fas"
                 icon="key"
                 password-reveal
-                rounded>
+                rounded
+                v-model="user.password">
             </b-input>
         </b-field>
 
         <div class="has-text-centered">
-          <a @click="go('panel')" class="button is-vcentered is-primary is-outlined is-rounded">Iniciar Sesión</a>
+          <a @click="go('class')" class="button is-vcentered is-primary is-outlined is-rounded">Iniciar Sesión</a>
         </div>
       </section>
     </div>
@@ -47,13 +49,31 @@ export default {
   name: "login",
   data() {
     return {
-      show: 1
+      show: 1,
+      user: {
+        username: '',
+        password: ''
+      }
     };
   },
   methods: {
 
-    async go(route) {
-      this.$router.push({ name: route });
+    go(route) {
+      if(this.user.username == 'profesor' && this.user.password == '12345'){
+        this.$cookie.set('userId', '1', { expires: '1h' })
+        this.$cookie.set('username', 'profesor', { expires: '1h' })
+        this.$router.push({ name: route });
+      }else if(this.user.username == 'alumno' && this.user.password == '12345'){
+        this.$cookie.set('userId', '2', { expires: '1h' })
+        this.$cookie.set('username', 'alumno', { expires: '1h' })
+        this.$router.push({ name: route });
+      }else{
+        this.$toast.open({
+          message: '[Error] usuario o clave incorrecta',
+          type: 'is-danger'
+        })
+      }
+      
     },
 
     

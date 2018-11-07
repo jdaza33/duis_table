@@ -66,7 +66,7 @@
                       </a>
                     </div>
                </div>
-               <chat class="chat"></chat>
+               <chat class="chat" :messageList="messageList"></chat>
           </div>
      </div>
 </div>
@@ -81,6 +81,8 @@ import Chat from "@/components/views/Chat.vue";
 import pusher from "pusher";
 import axios from '@/config/axios.js'
 import msDrawBoard from 'msdrawboard'
+
+import { ChatManager, TokenProvider } from '@pusher/chatkit-client'
 
 import { codemirror } from 'vue-codemirror'
 import 'codemirror/lib/codemirror.css'
@@ -133,6 +135,11 @@ const errorHandler = err => {
 export default {
   data() {
     return {
+      //Config
+      username: '',
+      userId: '',
+      classId: '',
+
       //OpenTok
       apiKey: process.env.VUE_APP_API_KEY_OPENTOK,
       sessionId: '',
@@ -151,6 +158,13 @@ export default {
 
       //Pusher
       channel: {},
+
+      //Chatkit
+      chatManager: '',
+      currentUser: null,
+
+      //Chat
+      messageList: [],
 
       //Editor de Codigo
       codeEdit: '//Presiona click y escribe tu codigo',
@@ -229,66 +243,154 @@ export default {
   components: { Chat, Subscriber, codemirror, msDrawBoard },
 
   created() {
-    /*
-    INICIO - OPENTOK
-    */
+    
 
-    this.session = OT.initSession(this.apiKey, this.sessionId);
-    this.session.connect(
-      this.token,
-      err => {
-        if (err) {
-          errorHandler(err);
+    this.sessionId = this.$cookie.get('sessionId').toString()
+    this.token = this.$cookie.get('token').toString()
+    this.classId = this.$cookie.get('classId').toString()
+
+
+    if(this.classId != undefined){
+
+        /*
+      INICIO - OPENTOK
+      */
+
+      console.log(this.apiKey)
+      console.log(this.sessionId)
+      console.log(this.token)
+
+      this.session = OT.initSession(this.apiKey, this.sessionId);
+      this.session.connect(
+        this.token,
+        err => {
+          if (err) {
+            errorHandler(err);
+          }
         }
-      }
-    );
+      );
 
-    if (this.publisher != null) {
-      this.publisher.on("streamCreated", function(event) {
-        console.log("The publisher started streaming.");
+      if (this.publisher != null) {
+        this.publisher.on("streamCreated", function(event) {
+          console.log("The publisher started streaming.");
+        });
+        this.publisher.on("streamDestroyed", function(event) {
+          console.log("The publisher stopped streaming. Reason: " + event.reason);
+        });
+      }
+
+      this.session.on("streamCreated", event => {
+        this.streams.push(event.stream);
       });
-      this.publisher.on("streamDestroyed", function(event) {
-        console.log("The publisher stopped streaming. Reason: " + event.reason);
+      this.session.on("streamDestroyed", event => {
+        const idx = this.streams.indexOf(event.stream);
+        if (idx > -1) {
+          this.streams.splice(idx, 1);
+        }
       });
+
+      /**
+       FIN - OPENTOK
+       */
+
+      /**
+       INICIO - PUSHER
+       */
+
+      let pusher = new Pusher(process.env.VUE_APP_API_KEY_PUSHER, {
+        cluster: process.env.VUE_APP_API_CLUSTER_PUSHER,
+        encrypted: true,
+        authEndpoint: `${process.env.VUE_APP_API_URL}/pusher/auth`
+      });
+
+      this.channel = pusher.subscribe(`private-${this.classId}`);
+      this.channel.bind("client-new-text", data => {
+        this.setTextEdit(data)
+      });
+
+      //this.channel = pusher.subscribe("private-editcode");
+      this.channel.bind("client-new-code", data => {
+        this.setCode(data)
+      });
+
+      /**
+       FIN - PUSHER
+       */
+
+       if(this.currentUser != null){
+        /*this.currentUser.fetchMessages({
+        roomId: 19373269,
+        direction: 'older',
+        limit: 10,
+        })
+        .then(messages => {
+          console.log(messages)
+        })
+        .catch(err => {
+          console.log(`Error fetching messages: ${err}`)
+        })*/
+
+        /*this.currentUser.subscribeToRoom({
+          roomId: currentUser.rooms[0].id,
+          hooks: {
+            onMessage: message => {
+              console.log(`Received new message: ${message.text}`)
+            }
+          }
+        });*/
+       }
+
+       
+      
+
+       
+
+    }else{
+      this.$router.push({ name: 'class' })
     }
 
-    this.session.on("streamCreated", event => {
-      this.streams.push(event.stream);
-    });
-    this.session.on("streamDestroyed", event => {
-      const idx = this.streams.indexOf(event.stream);
-      if (idx > -1) {
-        this.streams.splice(idx, 1);
-      }
-    });
+    
+  },
 
-    /**
-     FIN - OPENTOK
-     */
+  mounted(){
+    /*
+    INICIO - CHATKIT
+   */
 
-    /**
-     INICIO - PUSHER
-     */
+   this.chatManager = new ChatManager({
+      instanceLocator: 'v1:us1:8bd51fc5-238c-41f3-9cf4-d998d087171b',
+      userId: this.$cookie.get('userId').toString(),
+      tokenProvider: new TokenProvider({ url: 'https://us1.pusherplatform.io/services/chatkit_token_provider/v1/8bd51fc5-238c-41f3-9cf4-d998d087171b/token' })
+    })
 
-    let pusher = new Pusher(process.env.VUE_APP_API_KEY_PUSHER, {
-      cluster: process.env.VUE_APP_API_CLUSTER_PUSHER,
-      encrypted: true,
-      authEndpoint: `${process.env.VUE_APP_API_URL}/pusher/auth`
-    });
+   this.chatManager.connect()
+    .then(currentUser => {
+      console.log('Successful connection', currentUser)
+      this.currentUser = currentUser
+      currentUser.subscribeToRoom({
+        roomId: currentUser.rooms[0].id,
+        hooks: {
+          onMessage: message => {
+            this.messageList.push({
+              type: 'text',
+              author: message.senderId.toString() == this.$cookie.get('userId').toString() ? 'me' : '2',
+              data: {
+                text: message.text
+              }
+            })
+            console.log(`Received new message: ${message.text}`)
+            this.$forceUpdate()
+          }
+        }
+      });
+    })
+    .catch(err => {
+      console.log('Error on connection', err)
+    })
 
-    this.channel = pusher.subscribe("private-editext");
-    this.channel.bind("client-new-text", data => {
-      this.setTextEdit(data)
-    });
-
-    //this.channel = pusher.subscribe("private-editcode");
-    this.channel.bind("client-new-code", data => {
-      this.setCode(data)
-    });
-
-    /**
-     FIN - PUSHER
-     */
+   /*
+    FIN - CHATKIT
+   */
   },
 
   watch: {
@@ -296,10 +398,6 @@ export default {
       this.channel.trigger("client-new-text", newText);
       this.$forceUpdate()
     }*/
-  },
-
-  mounted(){
-    
   },
 
   methods: {

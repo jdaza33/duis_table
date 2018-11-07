@@ -39,7 +39,7 @@
                 <strong>Fecha fin: </strong> {{i.date_end.substring(0,10)}}
               </div>
               <div class="card-footer">
-                <a @click="assignClas(i.sessionId, i.token)" class="card-footer-item"><strong>Tomar esta clase..</strong></a>
+                <a @click="assignClass(i._id ,i.sessionId, i.token)" class="card-footer-item"><strong>Tomar esta clase..</strong></a>
               </div>
             </div>
           </div>
@@ -93,10 +93,25 @@ import ModalClass from '@/components/views/ModalClass';
         })
       },
 
+      assignClass(idClass, sessionId, token){
+        this.$cookie.set('classId', idClass, { expires: '1h' })
+        this.$cookie.set('sessionId', sessionId, { expires: '1h' })
+        this.$cookie.set('token', token, { expires: '1h' })
+        this.$router.push({ name: 'tablero' })
+      }
+
     },
 
     mounted(){
       this.getClass()
+    },
+    create(){
+
+    },
+    watch: {
+      isModalClassActive: function() {
+        this.getClass()
+      }
     }
   }
 </script>

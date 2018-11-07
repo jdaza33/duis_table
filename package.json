@@ -10,10 +10,13 @@
   },
   "dependencies": {
     "@opentok/client": "^2.14.8",
+    "@pusher/chatkit-client": "^1.0.4",
+    "@pusher/chatkit-server": "^1.0.2",
     "autosize": "^4.0.2",
     "axios": "^0.18.0",
     "body-parser": "^1.18.3",
     "buefy": "^0.7.0",
+    "cookies-js": "^1.2.3",
     "cors": "^2.8.4",
     "express": "^4.16.4",
     "greenlock-express": "^2.4.6",

@@ -20,28 +20,29 @@
 <script>
 export default {
   name: "app",
+  props: ['messageList'],
   data() {
     return {
       participants: [
         {
-          id: "user1",
-          name: "J. Daza",
+          id: "1",
+          name: "Profesor",
           imageUrl: "https://avatars3.githubusercontent.com/u/1915989?s=230&v=4"
         },
         {
-          id: "user2",
-          name: "Alfonso",
+          id: "2",
+          name: "Alumno",
           imageUrl:
             "https://avatars3.githubusercontent.com/u/37018832?s=200&v=4"
         }
       ], // the list of all the participant of the conversation. `name` is the user name, `id` is used to establish the author of a message, `imageUrl` is supposed to be the user avatar.
       titleImageUrl:
         "https://a.slack-edge.com/66f9/img/avatars-teams/ava_0001-34.png",
-      messageList: [
+      /*messageList: [
         { type: "text", author: `me`, data: { text: `Epalee!` } },
         { type: "text", author: `user1`, data: { text: `Chao` } },
         { type: "text", author: `me`, data: { text: `:((` } }
-      ], // the list of the messages to show, can be paginated and adjusted dynamically
+      ], */ // the list of the messages to show, can be paginated and adjusted dynamically
       newMessagesCount: 0,
       isChatOpen: false, // to determine whether the chat window should be open or closed
       showTypingIndicator: "", // when set to a value matching the participant.id it shows the typing indicator for the specific user
