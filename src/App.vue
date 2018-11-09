@@ -44,6 +44,8 @@ export default {
   @import "~bulma";
   @import "~buefy/src/scss/buefy";
 
+  @import "~vue-wysiwyg/dist/vueWysiwyg.css";
+
 </style>
 
 <style>

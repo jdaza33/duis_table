@@ -5,7 +5,7 @@
                <section>
                     <b-tabs position="is-centered" type="is-toggle-rounded">
                          <b-tab-item label="Editor de Texto" icon="edit" icon-pack="fas">
-                           <vue-pell-editor 
+                           <!--<vue-pell-editor 
                               v-model="textEdit"
                               :actions="editorOptions" 
                               :content="textEdit" 
@@ -13,7 +13,18 @@
                               :classes="editorClasses"
                               default-paragraph-separator="p"
                               @change="postEditText"
-                            />
+                            />-->
+                            <!--<vue-editor v-model="textEdit" @text-change="postEditText()"></vue-editor>-->
+                            <!--<vue-ckeditor 
+                            v-model="textEdit" 
+                            @input="postEditText()"
+                            />-->
+                            <!--<vue-ckeditor type="classic" v-model="textEdit" :editors="editors"
+                            @input="postEditText()">
+                            </vue-ckeditor>-->
+                            <ckeditor type="classic" v-model="textEdit"></ckeditor>
+                            <!--<wysiwyg v-model="textEdit" @change="postEditText()"/>-->
+                            
                          </b-tab-item>
                          <b-tab-item label="Editor de Codigo" icon="code" icon-pack="fas">
                             <codemirror v-model="codeEdit" :options="cmOptions" @keyup.native="postCode"></codemirror>
@@ -79,54 +90,57 @@ import Publisher from "@/components/opentok/Publisher.vue";
 import Subscriber from "@/components/opentok/Subscriber.vue";
 import Chat from "@/components/views/Chat.vue";
 import pusher from "pusher";
-import axios from '@/config/axios.js'
-import msDrawBoard from 'msdrawboard'
+import axios from "@/config/axios.js";
+import msDrawBoard from "msdrawboard";
 
-import { ChatManager, TokenProvider } from '@pusher/chatkit-client'
+import { VueEditor, Quill } from "vue2-editor";
+import VueCkeditor from "vue-ckeditor2";
+//import VueCkeditor from "vueckeditor";
 
-import { codemirror } from 'vue-codemirror'
-import 'codemirror/lib/codemirror.css'
+import { ChatManager, TokenProvider } from "@pusher/chatkit-client";
+
+import { codemirror } from "vue-codemirror";
+import "codemirror/lib/codemirror.css";
 // language js
-import 'codemirror/mode/javascript/javascript.js'
+import "codemirror/mode/javascript/javascript.js";
 // theme css
-import 'codemirror/theme/monokai.css'
-import 'codemirror/theme/paraiso-light.css'
+import "codemirror/theme/monokai.css";
+import "codemirror/theme/paraiso-light.css";
 
- // require active-line.js
-import'codemirror/addon/selection/active-line.js'
+// require active-line.js
+import "codemirror/addon/selection/active-line.js";
 // styleSelectedText
-import'codemirror/addon/selection/mark-selection.js'
-import'codemirror/addon/search/searchcursor.js'
+import "codemirror/addon/selection/mark-selection.js";
+import "codemirror/addon/search/searchcursor.js";
 
 // hint
-import'codemirror/addon/hint/show-hint.js'
-import'codemirror/addon/hint/show-hint.css'
-import'codemirror/addon/hint/javascript-hint.js'
-import'codemirror/addon/selection/active-line.js'
+import "codemirror/addon/hint/show-hint.js";
+import "codemirror/addon/hint/show-hint.css";
+import "codemirror/addon/hint/javascript-hint.js";
+import "codemirror/addon/selection/active-line.js";
 // highlightSelectionMatches
-import'codemirror/addon/scroll/annotatescrollbar.js'
-import'codemirror/addon/search/matchesonscrollbar.js'
-import'codemirror/addon/search/searchcursor.js'
-import'codemirror/addon/search/match-highlighter.js'
+import "codemirror/addon/scroll/annotatescrollbar.js";
+import "codemirror/addon/search/matchesonscrollbar.js";
+import "codemirror/addon/search/searchcursor.js";
+import "codemirror/addon/search/match-highlighter.js";
 // keyMap
-import'codemirror/mode/clike/clike.js'
-import'codemirror/addon/edit/matchbrackets.js'
-import'codemirror/addon/comment/comment.js'
-import'codemirror/addon/dialog/dialog.js'
-import'codemirror/addon/dialog/dialog.css'
-import'codemirror/addon/search/searchcursor.js'
-import'codemirror/addon/search/search.js'
-import'codemirror/keymap/sublime.js'
+import "codemirror/mode/clike/clike.js";
+import "codemirror/addon/edit/matchbrackets.js";
+import "codemirror/addon/comment/comment.js";
+import "codemirror/addon/dialog/dialog.js";
+import "codemirror/addon/dialog/dialog.css";
+import "codemirror/addon/search/searchcursor.js";
+import "codemirror/addon/search/search.js";
+import "codemirror/keymap/sublime.js";
 // foldGutter
-import'codemirror/addon/fold/foldgutter.css'
-import'codemirror/addon/fold/brace-fold.js'
-import'codemirror/addon/fold/comment-fold.js'
-import'codemirror/addon/fold/foldcode.js'
-import'codemirror/addon/fold/foldgutter.js'
-import'codemirror/addon/fold/indent-fold.js'
-import'codemirror/addon/fold/markdown-fold.js'
-import'codemirror/addon/fold/xml-fold.js'
-
+import "codemirror/addon/fold/foldgutter.css";
+import "codemirror/addon/fold/brace-fold.js";
+import "codemirror/addon/fold/comment-fold.js";
+import "codemirror/addon/fold/foldcode.js";
+import "codemirror/addon/fold/foldgutter.js";
+import "codemirror/addon/fold/indent-fold.js";
+import "codemirror/addon/fold/markdown-fold.js";
+import "codemirror/addon/fold/xml-fold.js";
 
 const errorHandler = err => {
   console.log("error --> " + err);
@@ -136,14 +150,14 @@ export default {
   data() {
     return {
       //Config
-      username: '',
-      userId: '',
-      classId: '',
+      username: "",
+      userId: "",
+      classId: "",
 
       //OpenTok
       apiKey: process.env.VUE_APP_API_KEY_OPENTOK,
-      sessionId: '',
-      token: '',
+      sessionId: "",
+      token: "",
       streams: [],
       session: null,
 
@@ -155,19 +169,18 @@ export default {
         width: "50%"
       },
 
-
       //Pusher
       channel: {},
 
       //Chatkit
-      chatManager: '',
+      chatManager: "",
       currentUser: null,
 
       //Chat
       messageList: [],
 
       //Editor de Codigo
-      codeEdit: '//Presiona click y escribe tu codigo',
+      codeEdit: "//Presiona click y escribe tu codigo",
       cmOptions: {
         tabSize: 2,
         styleActiveLine: true,
@@ -177,15 +190,15 @@ export default {
         foldGutter: true,
         gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
         highlightSelectionMatches: { showToken: /\w/, annotateScrollbar: true },
-        mode: 'text/javascript',
-        hintOptions:{
+        mode: "text/javascript",
+        hintOptions: {
           completeSingle: false
         },
         keyMap: "sublime",
         matchBrackets: true,
         showCursorWhenSelecting: true,
         theme: "monokai",
-        extraKeys: { "Ctrl": "autocomplete" },
+        extraKeys: { Ctrl: "autocomplete" },
         autofocus: false
       },
 
@@ -216,49 +229,52 @@ export default {
       isPublishAudio: true,
 
       //Editor Texto
+      config: {
+        toolbar: [
+          ["Bold", "Italic", "Underline", "Strike", "Link", "List", "Undo"]
+        ],
+        height: 300
+      },
+
       textEdit: "",
       editorOptions: [
-        'bold',
-        'underline',
+        "bold",
+        "underline",
         {
-          name: 'italic',
-          result: () => window.pell.exec('italic')
+          name: "italic",
+          result: () => window.pell.exec("italic")
         },
-        'strikethrough',
-        'olist',
+        "strikethrough",
+        "olist",
         {
-          name: 'ulist',
-          result: () => window.pell.exec('ulist')
+          name: "ulist",
+          result: () => window.pell.exec("ulist")
         }
       ],
-      editorPlaceholder: 'Escribe algo aqui...',
+      editorPlaceholder: "Escribe algo aqui...",
       editorClasses: {
-        actionbar: 'pell-actionbar',
-        button: 'pell-button',
-        content: 'pell-content',
-        selected: 'pell-button-selected'
+        actionbar: "pell-actionbar",
+        button: "pell-button",
+        content: "pell-content",
+        selected: "pell-button-selected"
       }
     };
   },
-  components: { Chat, Subscriber, codemirror, msDrawBoard },
+  components: { Chat, Subscriber, codemirror, msDrawBoard, VueEditor, VueCkeditor },
 
   created() {
-    
+    this.sessionId = this.$cookie.get("sessionId").toString();
+    this.token = this.$cookie.get("token").toString();
+    this.classId = this.$cookie.get("classId").toString();
 
-    this.sessionId = this.$cookie.get('sessionId').toString()
-    this.token = this.$cookie.get('token').toString()
-    this.classId = this.$cookie.get('classId').toString()
-
-
-    if(this.classId != undefined){
-
-        /*
+    if (this.classId != undefined) {
+      /*
       INICIO - OPENTOK
       */
 
-      console.log(this.apiKey)
-      console.log(this.sessionId)
-      console.log(this.token)
+      console.log(this.apiKey);
+      console.log(this.sessionId);
+      console.log(this.token);
 
       this.session = OT.initSession(this.apiKey, this.sessionId);
       this.session.connect(
@@ -275,7 +291,9 @@ export default {
           console.log("The publisher started streaming.");
         });
         this.publisher.on("streamDestroyed", function(event) {
-          console.log("The publisher stopped streaming. Reason: " + event.reason);
+          console.log(
+            "The publisher stopped streaming. Reason: " + event.reason
+          );
         });
       }
 
@@ -305,19 +323,19 @@ export default {
 
       this.channel = pusher.subscribe(`private-${this.classId}`);
       this.channel.bind("client-new-text", data => {
-        this.setTextEdit(data)
+        this.setTextEdit(data);
       });
 
       //this.channel = pusher.subscribe("private-editcode");
       this.channel.bind("client-new-code", data => {
-        this.setCode(data)
+        this.setCode(data);
       });
 
       /**
        FIN - PUSHER
        */
 
-       if(this.currentUser != null){
+      if (this.currentUser != null) {
         /*this.currentUser.fetchMessages({
         roomId: 19373269,
         direction: 'older',
@@ -329,7 +347,6 @@ export default {
         .catch(err => {
           console.log(`Error fetching messages: ${err}`)
         })*/
-
         /*this.currentUser.subscribeToRoom({
           roomId: currentUser.rooms[0].id,
           hooks: {
@@ -338,70 +355,73 @@ export default {
             }
           }
         });*/
-       }
-
-       
-      
-
-       
-
-    }else{
-      this.$router.push({ name: 'class' })
+      }
+    } else {
+      this.$router.push({ name: "class" });
     }
-
-    
   },
 
-  mounted(){
+  mounted() {
     /*
     INICIO - CHATKIT
    */
 
-   this.chatManager = new ChatManager({
-      instanceLocator: 'v1:us1:8bd51fc5-238c-41f3-9cf4-d998d087171b',
-      userId: this.$cookie.get('userId').toString(),
-      tokenProvider: new TokenProvider({ url: 'https://us1.pusherplatform.io/services/chatkit_token_provider/v1/8bd51fc5-238c-41f3-9cf4-d998d087171b/token' })
-    })
+    this.chatManager = new ChatManager({
+      instanceLocator: "v1:us1:8bd51fc5-238c-41f3-9cf4-d998d087171b",
+      userId: this.$cookie.get("userId").toString(),
+      tokenProvider: new TokenProvider({
+        url:
+          "https://us1.pusherplatform.io/services/chatkit_token_provider/v1/8bd51fc5-238c-41f3-9cf4-d998d087171b/token"
+      })
+    });
 
-   this.chatManager.connect()
-    .then(currentUser => {
-      console.log('Successful connection', currentUser)
-      this.currentUser = currentUser
-      currentUser.subscribeToRoom({
-        roomId: currentUser.rooms[0].id,
-        hooks: {
-          onMessage: message => {
-            this.messageList.push({
-              type: 'text',
-              author: message.senderId.toString() == this.$cookie.get('userId').toString() ? 'me' : '2',
-              data: {
-                text: message.text
-              }
-            })
-            console.log(`Received new message: ${message.text}`)
-            this.$forceUpdate()
+    this.chatManager
+      .connect()
+      .then(currentUser => {
+        console.log("Successful connection", currentUser);
+        this.currentUser = currentUser;
+        currentUser.subscribeToRoom({
+          roomId: currentUser.rooms[0].id,
+          hooks: {
+            onMessage: message => {
+              this.messageList.push({
+                type: "text",
+                author:
+                  message.senderId.toString() ==
+                  this.$cookie.get("userId").toString()
+                    ? "me"
+                    : "2",
+                data: {
+                  text: message.text
+                }
+              });
+              console.log(`Received new message: ${message.text}`);
+              this.$forceUpdate();
+            }
           }
-        }
+        });
+      })
+      .catch(err => {
+        console.log("Error on connection", err);
       });
-    })
-    .catch(err => {
-      console.log('Error on connection', err)
-    })
 
-   /*
+    /*
     FIN - CHATKIT
    */
   },
 
   watch: {
     /*textEdit: function(newText) {
-      this.channel.trigger("client-new-text", newText);
-      this.$forceUpdate()
+      this.postEditText()
     }*/
   },
 
   methods: {
     errorHandler,
+
+    proa(){
+      console.log('SII')
+    },
 
     isVideo() {
       if (this.isPublishVideo == true) {
@@ -464,11 +484,11 @@ export default {
       this.channel.trigger("client-new-code", this.codeEdit);
     },
 
-    setTextEdit(newText){
-      this.textEdit = newText
+    setTextEdit(newText) {
+      this.textEdit = newText;
     },
-    setCode(newCode){
-      this.codeEdit = newCode
+    setCode(newCode) {
+      this.codeEdit = newCode;
     }
   }
 };
@@ -495,13 +515,13 @@ export default {
 }
 
 .pell-button {
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-    height: 30px;
-    outline: 0;
-    vertical-align: bottom;
-    width: 30px;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  height: 30px;
+  outline: 0;
+  vertical-align: bottom;
+  width: 30px;
 }
 </style>
 
