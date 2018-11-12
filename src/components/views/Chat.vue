@@ -9,8 +9,8 @@
       :isOpen="isChatOpen"
       :close="closeChat"
       :open="openChat"
-      :showEmoji="true"
-      :showFile="true"
+      :showEmoji="false"
+      :showFile="false"
       :showTypingIndicator="showTypingIndicator"
       :colors="colors"
       :alwaysScrollToBottom="alwaysScrollToBottom" />
@@ -18,34 +18,28 @@
 </template>
 
 <script>
+import axios from "@/config/axios.js";
+
 export default {
   name: "app",
-  props: ['messageList'],
+  props: ["messageList"],
   data() {
     return {
       participants: [
         {
-          id: "1",
-          name: "Profesor",
+          id: "0",
+          name: "Clase",
           imageUrl: "https://avatars3.githubusercontent.com/u/1915989?s=230&v=4"
-        },
-        {
-          id: "2",
-          name: "Alumno",
-          imageUrl:
-            "https://avatars3.githubusercontent.com/u/37018832?s=200&v=4"
         }
-      ], // the list of all the participant of the conversation. `name` is the user name, `id` is used to establish the author of a message, `imageUrl` is supposed to be the user avatar.
-      titleImageUrl:
-        "https://a.slack-edge.com/66f9/img/avatars-teams/ava_0001-34.png",
+      ], 
+      titleImageUrl: "img/duis-min.png", 
       /*messageList: [
         { type: "text", author: `me`, data: { text: `Epalee!` } },
         { type: "text", author: `user1`, data: { text: `Chao` } },
         { type: "text", author: `me`, data: { text: `:((` } }
-      ], */ // the list of the messages to show, can be paginated and adjusted dynamically
-      newMessagesCount: 0,
-      isChatOpen: false, // to determine whether the chat window should be open or closed
-      showTypingIndicator: "", // when set to a value matching the participant.id it shows the typing indicator for the specific user
+      ], */ newMessagesCount: 0,
+      isChatOpen: false, 
+      showTypingIndicator: "", 
       colors: {
         header: {
           bg: "#e65c00",
@@ -74,21 +68,24 @@ export default {
     };
   },
   methods: {
-    sendMessage(text) {
-      if (text.length > 0) {
-        this.newMessagesCount = this.isChatOpen
-          ? this.newMessagesCount
-          : this.newMessagesCount + 1;
-        this.onMessageWasSent({
-          author: "support",
-          type: "text",
-          data: { text }
-        });
-      }
-    },
+    sendMessage(text) {},
     onMessageWasSent(message) {
       // called when the user sends a message
-      this.messageList = [...this.messageList, message];
+
+      //this.messageList = [...this.messageList, message];
+
+      axios
+        .post("/message/send", {
+          roomId: "19373269",
+          userId: this.$cookie.get("userId").toString(),
+          message: message.data.text
+        })
+        .then(res => {
+          console.log(res);
+        })
+        .catch(err => {
+          console.log(err);
+        });
     },
     openChat() {
       // called when the user clicks on the fab button to open the chat
@@ -102,4 +99,6 @@ export default {
   }
 };
 </script>
+
+
 

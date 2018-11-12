@@ -5,52 +5,80 @@
                <section>
                     <b-tabs position="is-centered" type="is-toggle-rounded">
                          <b-tab-item label="Editor de Texto" icon="edit" icon-pack="fas">
-                           <!--<vue-pell-editor 
-                              v-model="textEdit"
-                              :actions="editorOptions" 
-                              :content="textEdit" 
-                              :style-with-css="false"
-                              :classes="editorClasses"
-                              default-paragraph-separator="p"
-                              @change="postEditText"
-                            />-->
-                            <!--<vue-editor v-model="textEdit" @text-change="postEditText()"></vue-editor>-->
-                            <!--<vue-ckeditor 
-                            v-model="textEdit" 
-                            @input="postEditText()"
-                            />-->
-                            <!--<vue-ckeditor type="classic" v-model="textEdit" :editors="editors"
-                            @input="postEditText()">
-                            </vue-ckeditor>-->
-                            <ckeditor type="classic" v-model="textEdit"></ckeditor>
-                            <!--<wysiwyg v-model="textEdit" @change="postEditText()"/>-->
-                            
+                            <vue-editor v-model="textEdit" @keyup.native="postEditText()" 
+                            @selection-change="postEditText()" class=""
+                            :editorToolbar="toolbarEditText" ref="editor" ></vue-editor>
                          </b-tab-item>
                          <b-tab-item label="Editor de Codigo" icon="code" icon-pack="fas">
-                            <codemirror v-model="codeEdit" :options="cmOptions" @keyup.native="postCode"></codemirror>
+                           
+                           <b-tabs size="is-small">
+
+                             <b-tab-item :label="`Nro. ${index + 1}`" v-model="activeTabCode" 
+                             v-for="(item, index) in listEditCode" :key="index" >
+
+                              <b-field grouped>
+                                  <a class="button is-success is-outlined space-min-right" @click="addTabCode()">
+                                    <span class="icon is-small">
+                                      <i class="fas fa-file-code"></i>
+                                    </span>
+                                  </a>
+                                  <a class="button is-danger is-outlined space-right" @click="deleteTabCode(index)">
+                                    <span class="icon is-small">
+                                      <i class="fas fa-file-export"></i>
+                                    </span>
+                                  </a>
+                                  <b-select placeholder="Lenguajes" icon="file-code" icon-pack="fas" v-model="item.cmOptions.mode">
+                                      <option :value="i.mime" v-for="(i, j) in item.modes" :key="j">{{i.name}}</option>
+                                  </b-select>
+                                  <a class="button" @click="setCodeEdit('-', index)">
+                                    <span class="icon is-small">
+                                      <i class="fas fa-search-minus"></i>
+                                    </span>
+                                  </a>
+                                  <a class="button" @click="setCodeEdit('+', index)">
+                                    <span class="icon is-small">
+                                      <i class="fas fa-search-plus"></i>
+                                    </span>
+                                  </a>
+                                  
+                                </b-field>
+                              <codemirror v-model="item.codeEdit" :options="item.cmOptions" 
+                              :style="`font-size: ${item.sizeCode}px;`"
+                              @keyup.native="postCode(index)">
+                              </codemirror>
+                             </b-tab-item>
+
+                             <!--<b-tab-item icon="plus" icon-pack="fas" @change="addTabCode()"></b-tab-item>-->
+
+                           </b-tabs>
+                            
                          </b-tab-item>
                          <b-tab-item label="Tabla de Dibujo" icon="palette" icon-pack="fas">
-                           <msDrawBoard></msDrawBoard>
+                           <paint></paint>                           
                          </b-tab-item>
+                         
                     </b-tabs>
                </section>
                <!--<a @click="connect()" class="button is-vcentered is-primary is-outlined is-rounded">Conectar</a>-->
           </div>
           
           <div class="column is-3">
+                <b-taglist attached>
+                    <b-tag type="is-dark">Tiempo</b-tag>
+                    <b-tag type="is-info">{{`${time.hour}:${time.min}:${time.s}`}}</b-tag>
+                </b-taglist>
                <div class="card">
                     <div class="card-content" ><!---show="streams.length > 0 ? true : false">-->
                          <div id="subscribers" v-for="(stream, index) in streams" :key="index">
                             <subscriber @error="errorHandler" :opts="optsTwo" :stream="stream" :session="session"></subscriber>
                          </div>
-                         <div id="subscriber"></div>
                     </div>
                     <div class="card-content center">
                          <!--<publisher :session="session" :opts="optsOne" @error="errorHandler"></publisher>-->
                          <div :id="'publisher'+index" v-for="(item, index) in statusPublisher" :key="index" v-show="item"></div>
                     </div>
                     <div class="card-footer">
-                      <a :class="
+                      <!--<a :class="
                               isPublish == true ? 
                               'button is-medium is-success is-outlined card-footer-item' : 
                               'button is-medium is-danger is-outlined card-footer-item'"
@@ -58,7 +86,7 @@
                           <span class="icon is-medium">
                             <i :class="isPublish == true ? 'fas fa-eye' : 'fas fa-eye-slash'"></i>
                           </span>
-                      </a>
+                      </a>-->
                       <a :class="isPublishVideo == true ? 
                                 'button is-medium is-success is-outlined card-footer-item' : 
                                 'button is-medium is-danger card-footer-item'" 
@@ -94,53 +122,16 @@ import axios from "@/config/axios.js";
 import msDrawBoard from "msdrawboard";
 
 import { VueEditor, Quill } from "vue2-editor";
-import VueCkeditor from "vue-ckeditor2";
-//import VueCkeditor from "vueckeditor";
 
 import { ChatManager, TokenProvider } from "@pusher/chatkit-client";
 
 import { codemirror } from "vue-codemirror";
-import "codemirror/lib/codemirror.css";
-// language js
-import "codemirror/mode/javascript/javascript.js";
-// theme css
-import "codemirror/theme/monokai.css";
-import "codemirror/theme/paraiso-light.css";
+import ModeL from "@/utils/lenguage_mode.js";
 
-// require active-line.js
-import "codemirror/addon/selection/active-line.js";
-// styleSelectedText
-import "codemirror/addon/selection/mark-selection.js";
-import "codemirror/addon/search/searchcursor.js";
+const Stopwatch = require("node-stopwatch").Stopwatch;
+const stopwatch = Stopwatch.create();
 
-// hint
-import "codemirror/addon/hint/show-hint.js";
-import "codemirror/addon/hint/show-hint.css";
-import "codemirror/addon/hint/javascript-hint.js";
-import "codemirror/addon/selection/active-line.js";
-// highlightSelectionMatches
-import "codemirror/addon/scroll/annotatescrollbar.js";
-import "codemirror/addon/search/matchesonscrollbar.js";
-import "codemirror/addon/search/searchcursor.js";
-import "codemirror/addon/search/match-highlighter.js";
-// keyMap
-import "codemirror/mode/clike/clike.js";
-import "codemirror/addon/edit/matchbrackets.js";
-import "codemirror/addon/comment/comment.js";
-import "codemirror/addon/dialog/dialog.js";
-import "codemirror/addon/dialog/dialog.css";
-import "codemirror/addon/search/searchcursor.js";
-import "codemirror/addon/search/search.js";
-import "codemirror/keymap/sublime.js";
-// foldGutter
-import "codemirror/addon/fold/foldgutter.css";
-import "codemirror/addon/fold/brace-fold.js";
-import "codemirror/addon/fold/comment-fold.js";
-import "codemirror/addon/fold/foldcode.js";
-import "codemirror/addon/fold/foldgutter.js";
-import "codemirror/addon/fold/indent-fold.js";
-import "codemirror/addon/fold/markdown-fold.js";
-import "codemirror/addon/fold/xml-fold.js";
+import Paint from "@/components/views/Canvas.vue";
 
 const errorHandler = err => {
   console.log("error --> " + err);
@@ -153,6 +144,12 @@ export default {
       username: "",
       userId: "",
       classId: "",
+      timer: "",
+      time: {
+        hour: 0,
+        min: 0,
+        s: 0
+      },
 
       //OpenTok
       apiKey: process.env.VUE_APP_API_KEY_OPENTOK,
@@ -180,27 +177,10 @@ export default {
       messageList: [],
 
       //Editor de Codigo
-      codeEdit: "//Presiona click y escribe tu codigo",
-      cmOptions: {
-        tabSize: 2,
-        styleActiveLine: true,
-        lineNumbers: true,
-        styleSelectedText: true,
-        line: true,
-        foldGutter: true,
-        gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
-        highlightSelectionMatches: { showToken: /\w/, annotateScrollbar: true },
-        mode: "text/javascript",
-        hintOptions: {
-          completeSingle: false
-        },
-        keyMap: "sublime",
-        matchBrackets: true,
-        showCursorWhenSelecting: true,
-        theme: "monokai",
-        extraKeys: { Ctrl: "autocomplete" },
-        autofocus: false
-      },
+      listEditCode: [],
+
+      //Tab Editor de Codigo
+      activeTabCode: 0,
 
       //Publish
       isPublish: false,
@@ -222,59 +202,62 @@ export default {
         publishAudio: true,
         publishVideo: true,
         videoSource: true,
-        height: "150px",
-        width: "100%"
+        height: "120px",
+        width: "90%"
       },
       isPublishVideo: true,
       isPublishAudio: true,
 
       //Editor Texto
-      config: {
-        toolbar: [
-          ["Bold", "Italic", "Underline", "Strike", "Link", "List", "Undo"]
-        ],
-        height: 300
-      },
-
       textEdit: "",
-      editorOptions: [
-        "bold",
-        "underline",
-        {
-          name: "italic",
-          result: () => window.pell.exec("italic")
-        },
-        "strikethrough",
-        "olist",
-        {
-          name: "ulist",
-          result: () => window.pell.exec("ulist")
-        }
+      toolbarEditText: [
+        ["bold", "italic", "underline"],
+        [{ list: "ordered" }, { list: "bullet" }],
+        [{ indent: "-1" }, { indent: "+1" }]
       ],
-      editorPlaceholder: "Escribe algo aqui...",
-      editorClasses: {
-        actionbar: "pell-actionbar",
-        button: "pell-button",
-        content: "pell-content",
-        selected: "pell-button-selected"
-      }
+
+      //Canvas
+      table: null,
+      size: 15
     };
   },
-  components: { Chat, Subscriber, codemirror, msDrawBoard, VueEditor, VueCkeditor },
+  components: { Chat, Subscriber, codemirror, msDrawBoard, VueEditor, Paint },
 
   created() {
+    //Timer
+    stopwatch.start();
+    this.timer = setInterval(() => {
+      let sec = parseInt(stopwatch.elapsed.seconds);
+      if (sec > 59) {
+        this.time.min += 1;
+        if (this.time.min == 60) {
+          this.time.min = 0;
+          this.time.hour += 1;
+        }
+        stopwatch.restart();
+        this.time.s = 0;
+      } else {
+        this.time.s = sec;
+      }
+      //console.log(`Hora --> ${this.time.hour}:${this.time.min}:${this.time.s}`);
+    }, 1000);
+
+    //--------
+
     this.sessionId = this.$cookie.get("sessionId").toString();
     this.token = this.$cookie.get("token").toString();
     this.classId = this.$cookie.get("classId").toString();
+    this.username = this.$cookie.get("username").toString();
+    this.userId = this.$cookie.get("userId").toString();
 
     if (this.classId != undefined) {
       /*
       INICIO - OPENTOK
       */
 
-      console.log(this.apiKey);
+      /*console.log(this.apiKey);
       console.log(this.sessionId);
-      console.log(this.token);
+      console.log(this.token);*/
 
       this.session = OT.initSession(this.apiKey, this.sessionId);
       this.session.connect(
@@ -288,12 +271,12 @@ export default {
 
       if (this.publisher != null) {
         this.publisher.on("streamCreated", function(event) {
-          console.log("The publisher started streaming.");
+          //console.log("The publisher started streaming.");
         });
         this.publisher.on("streamDestroyed", function(event) {
-          console.log(
+          /*console.log(
             "The publisher stopped streaming. Reason: " + event.reason
-          );
+          );*/
         });
       }
 
@@ -318,7 +301,8 @@ export default {
       let pusher = new Pusher(process.env.VUE_APP_API_KEY_PUSHER, {
         cluster: process.env.VUE_APP_API_CLUSTER_PUSHER,
         encrypted: true,
-        authEndpoint: `${process.env.VUE_APP_API_URL}/pusher/auth`
+        forceTLS: true,
+        authEndpoint: `${process.env.VUE_APP_API_TWO_URL}/api/pusher/auth`
       });
 
       this.channel = pusher.subscribe(`private-${this.classId}`);
@@ -334,40 +318,25 @@ export default {
       /**
        FIN - PUSHER
        */
-
-      if (this.currentUser != null) {
-        /*this.currentUser.fetchMessages({
-        roomId: 19373269,
-        direction: 'older',
-        limit: 10,
-        })
-        .then(messages => {
-          console.log(messages)
-        })
-        .catch(err => {
-          console.log(`Error fetching messages: ${err}`)
-        })*/
-        /*this.currentUser.subscribeToRoom({
-          roomId: currentUser.rooms[0].id,
-          hooks: {
-            onMessage: message => {
-              console.log(`Received new message: ${message.text}`)
-            }
-          }
-        });*/
-      }
     } else {
       this.$router.push({ name: "class" });
     }
   },
 
   mounted() {
+    
+    this.addTabCode()
+
+    //Acceso a la video llamada
+    this.accessVideCam();
+
     /*
     INICIO - CHATKIT
    */
 
     this.chatManager = new ChatManager({
       instanceLocator: "v1:us1:8bd51fc5-238c-41f3-9cf4-d998d087171b",
+      //instanceLocator: "v1:us1:8521a6b1-9fd7-432f-a90f-03f772f111e0",
       userId: this.$cookie.get("userId").toString(),
       tokenProvider: new TokenProvider({
         url:
@@ -378,7 +347,7 @@ export default {
     this.chatManager
       .connect()
       .then(currentUser => {
-        console.log("Successful connection", currentUser);
+        //console.log("Successful connection", currentUser);
         this.currentUser = currentUser;
         currentUser.subscribeToRoom({
           roomId: currentUser.rooms[0].id,
@@ -390,12 +359,12 @@ export default {
                   message.senderId.toString() ==
                   this.$cookie.get("userId").toString()
                     ? "me"
-                    : "2",
+                    : "0",
                 data: {
                   text: message.text
                 }
               });
-              console.log(`Received new message: ${message.text}`);
+              //console.log(`Received new message: ${message.text}`);
               this.$forceUpdate();
             }
           }
@@ -412,36 +381,133 @@ export default {
 
   watch: {
     /*textEdit: function(newText) {
-      this.postEditText()
+      if(this.textEdit == newText){
+        this.postEditText()
+      }
     }*/
   },
 
   methods: {
     errorHandler,
 
-    proa(){
-      console.log('SII')
+    proa() {
+      console.log("SII");
+    },
+
+    addTabCode() {
+      let proa = {
+        codeEdit: "//Escribe tu codigo",
+        modes: ModeL,
+        sizeCode: 14,
+        cmOptions: {
+          tabSize: 2,
+          styleActiveLine: true,
+          lineNumbers: true,
+          styleSelectedText: true,
+          line: true,
+          foldGutter: true,
+          gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
+          highlightSelectionMatches: {
+            showToken: /\w/,
+            annotateScrollbar: true
+          },
+          mode: "text/javascript",
+          hintOptions: {
+            completeSingle: false
+          },
+          keyMap: "sublime",
+          matchBrackets: true,
+          showCursorWhenSelecting: true,
+          theme: "monokai",
+          extraKeys: { Ctrl: "autocomplete" },
+          autofocus: true
+        }
+      };
+      this.listEditCode.push(proa);
+      //console.log('add model')
+    },
+
+    finishClass() {
+      //clearInterval(this.timer);
+      //stop()
+    },
+
+    setFocusEditText() {
+      this.$refs.editor.quill.focus();
+    },
+
+    setBlurEditText() {
+      this.$refs.editor.quill.blur();
+    },
+
+    setCodeEdit(op, index) {
+      if (op == "-") {
+        this.listEditCode[index].sizeCode -= 1
+        //this.sizeCode -= 1;
+      }
+      if (op == "+") {
+        this.listEditCode[index].sizeCode += 1
+        //this.sizeCode += 1;
+      }
+    },
+
+    accessVideCam() {
+      this.$dialog.confirm({
+        title: "Acceso a videollamada",
+        message: "¿Desea habilitar el <br> acceso a la videollamada?",
+        confirmText: "¡Si claro!",
+        cancelText: "No",
+        type: "is-success",
+        hasIcon: true,
+        iconPack: "fas",
+        icon: "video",
+        onConfirm: () => {
+          this.$toast.open("Videollamada: OK");
+          this.showPublish();
+        },
+        onCancel: () => {}
+      });
     },
 
     isVideo() {
-      if (this.isPublishVideo == true) {
-        this.publisher.publishVideo(false);
-        this.isPublishVideo = false;
-      } else {
-        this.publisher.publishVideo(true);
-        this.isPublishVideo = true;
+      if (this.isPublish == true) {
+        if (this.isPublishVideo == true) {
+          this.publisher.publishVideo(false);
+          this.isPublishVideo = false;
+        } else {
+          this.publisher.publishVideo(true);
+          this.isPublishVideo = true;
+        }
+        if (this.isPublishVideo == false && this.isPublishAudio == false) {
+          this.showPublish();
+        }
+      } else if (this.isPublish == false) {
+        this.showPublish();
+        this.publisher.publishAudio(false);
+        this.isPublishAudio = false;
       }
+
       this.$forceUpdate();
     },
 
     isAudio() {
-      if (this.isPublishAudio == true) {
-        this.publisher.publishAudio(false);
-        this.isPublishAudio = false;
-      } else {
-        this.publisher.publishAudio(true);
-        this.isPublishAudio = true;
+      if (this.isPublish == true) {
+        if (this.isPublishAudio == true) {
+          this.publisher.publishAudio(false);
+          this.isPublishAudio = false;
+        } else {
+          this.publisher.publishAudio(true);
+          this.isPublishAudio = true;
+        }
+        if (this.isPublishVideo == false && this.isPublishAudio == false) {
+          this.showPublish();
+        }
+      } else if (this.isPublish == false) {
+        this.showPublish();
+        this.publisher.publishVideo(false);
+        this.isPublishVideo = false;
       }
+
       this.$forceUpdate();
     },
 
@@ -480,15 +546,16 @@ export default {
       this.channel.trigger("client-new-text", this.textEdit);
     },
 
-    postCode(e) {
-      this.channel.trigger("client-new-code", this.codeEdit);
+    postCode(index) {
+      this.channel.trigger("client-new-code", this.listEditCode);
     },
 
     setTextEdit(newText) {
+      this.setBlurEditText();
       this.textEdit = newText;
     },
-    setCode(newCode) {
-      this.codeEdit = newCode;
+    setCode(data) {
+      this.listEditCode = data;
     }
   }
 };
@@ -511,7 +578,7 @@ export default {
 <style>
 .ql-editor {
   min-height: 500px;
-  max-height: 70vh;
+  max-height: 50vh;
 }
 
 .pell-button {
@@ -523,7 +590,20 @@ export default {
   vertical-align: bottom;
   width: 30px;
 }
+
+.CodeMirror {
+}
+
+.space-right{
+  margin-right: 20px;
+}
+.space-min-right{
+  margin-right: 10px;
+}
 </style>
+
+
+
 
 
 

@@ -11,8 +11,9 @@ export default {
 </script>
 
 <style lang="scss">
-  // Import Bulma's core
   
+  // Import Bulma's core
+  @import "~vue-wysiwyg/dist/vueWysiwyg.css";
   @import "~bulma/sass/utilities/_all";
 
   // Set your colors
@@ -44,14 +45,14 @@ export default {
   @import "~bulma";
   @import "~buefy/src/scss/buefy";
 
-  @import "~vue-wysiwyg/dist/vueWysiwyg.css";
+  
 
 </style>
 
 <style>
 .ql-editor {
     min-height: 500px;
-    max-height: 70vh;
+    max-height: 50vh;
 }
 </style>
 

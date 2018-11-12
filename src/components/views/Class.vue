@@ -94,9 +94,9 @@ import ModalClass from '@/components/views/ModalClass';
       },
 
       assignClass(idClass, sessionId, token){
-        this.$cookie.set('classId', idClass, { expires: '1h' })
-        this.$cookie.set('sessionId', sessionId, { expires: '1h' })
-        this.$cookie.set('token', token, { expires: '1h' })
+        this.$cookie.set('classId', idClass, { expires: '1D' })
+        this.$cookie.set('sessionId', sessionId, { expires: '1D' })
+        this.$cookie.set('token', token, { expires: '1D' })
         this.$router.push({ name: 'tablero' })
       }
 

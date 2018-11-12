@@ -2,10 +2,11 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Login from './components/layouts/Login.vue'
 import Panel from './components/layouts/Panel.vue'
-import Session from './components/opentok/Session.vue'
+//import Session from './components/opentok/Session.vue'
 import Tablero from './components/views/Tablero.vue'
-import ModalClass from './components/views/ModalClass.vue'
+//import ModalClass from './components/views/ModalClass.vue'
 import Class from './components/views/Class.vue'
+//import Canvas from './components/views/Canvas.vue'
 
 import Cookies  from 'cookies-js'
 
@@ -56,7 +57,7 @@ router.beforeEach((to, from, next) => {
 
   if (to.meta.requiredAuth) {
     let userId = Cookies.get('userId')
-    console.log(userId)
+    //console.log(userId)
     if (userId) {
       next()
     } else {

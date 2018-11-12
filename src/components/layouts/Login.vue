@@ -60,12 +60,12 @@ export default {
 
     go(route) {
       if(this.user.username == 'profesor' && this.user.password == '12345'){
-        this.$cookie.set('userId', '1', { expires: '1h' })
-        this.$cookie.set('username', 'profesor', { expires: '1h' })
+        this.$cookie.set('userId', '1', { expires: '1D' })
+        this.$cookie.set('username', 'profesor', { expires: '1D' })
         this.$router.push({ name: route });
       }else if(this.user.username == 'alumno' && this.user.password == '12345'){
-        this.$cookie.set('userId', '2', { expires: '1h' })
-        this.$cookie.set('username', 'alumno', { expires: '1h' })
+        this.$cookie.set('userId', '2', { expires: '1D' })
+        this.$cookie.set('username', 'alumno', { expires: '1D' })
         this.$router.push({ name: route });
       }else{
         this.$toast.open({

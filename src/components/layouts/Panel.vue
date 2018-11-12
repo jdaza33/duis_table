@@ -56,6 +56,10 @@
                      <span>{{username}}</span>
                      <b-icon icon="caret-down" pack="fas"></b-icon>
                </a>
+               <b-dropdown-item value="logout" @click="reportAbuse()">
+                     <b-icon icon="bullhorn" pack="fas"></b-icon>
+                     Reportar Abuso
+               </b-dropdown-item>
                <b-dropdown-item value="logout" @click="logout()">
                      <b-icon icon="sign-out-alt" pack="fas"></b-icon>
                      Salir
@@ -78,7 +82,7 @@
   <footer class="footer">
     <div class="content has-text-centered">
       <p>
-        &copy;2018 — <strong>PDF-Viewer</strong>
+        &copy;2018 — <strong>Duis</strong>
       </p>
     </div>
   </footer>
@@ -143,6 +147,10 @@ export default {
     loadDataUser(){
       this.username = this.$cookie.get('username')
       this.userId = this.$cookie.get('userId')
+    },
+
+    reportAbuse(){
+      
     }
   },
 

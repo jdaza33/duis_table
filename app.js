@@ -53,6 +53,11 @@ app.post('/pusher/auth', function (req, res) {
      res.send(auth);
 });
 
+app.post('/paint', (req, res) => {
+	pusher.trigger('painting', 'draw', req.body);
+	res.json(req.body);
+});
+
 //Chatkit pusher
 
 app.post('/user/create', (req, res) => {
@@ -67,7 +72,8 @@ app.post('/user/create', (req, res) => {
 	        res: true,
 	        message: 'Usuario creado'
 	   })
-	}).catch((err) => {
+	})
+	.catch((err) => {
 	   console.log(err);
 	   res.json({
 	        res: false,
@@ -77,7 +83,25 @@ app.post('/user/create', (req, res) => {
 	});
 })
 
-app.get('/user/:id', async (req, res) => {
+app.get('/user/:id', (req, res) => {
+	chatkit.getUser({
+		id: req.params.id,
+	})
+	.then(user => {
+		res.json({
+			res: true,
+			user
+		})
+	})
+	.catch(err => {
+		res.json({
+			res: false
+		})
+		console.error(err)
+	})
+})
+
+/*app.get('/user/:id', async (req, res) => {
 	let userId = req.params.id
 	await db.find({_id: userId}, (err, doc) => {
         if(err) console.log(err)
@@ -86,21 +110,23 @@ app.get('/user/:id', async (req, res) => {
             doc
         });
     });
-})
+})*/
 
 app.post('/room/new', (req, res) => {
      let room = req.body
      chatkit.createRoom({
-		creatorId: room.id,
+		creatorId: room.userId,
 		name: room.name,
      })
-	.then(() => {
+	.then(response => {
 	   console.log('Room created successfully');
 	   res.json({
-	        res: true,
+		   res: true,
+		   roomId: response.id,
 	        message: 'Clase creada'
 	   })
-	}).catch((err) => {
+	})
+	.catch((err) => {
 	   console.log(err);
 	   res.json({
 	        res: false,
@@ -110,6 +136,27 @@ app.post('/room/new', (req, res) => {
 	});
 })
 
+app.post('/room/add/users', (req, res) => {
+	let data = req.body
+	chatkit.addUsersToRoom({
+		roomId: data.roomId,
+		userIds: [data.userId]
+	})
+	.then(() => {
+		console.log('user added')
+		res.json({
+			res: true,
+			message: "Added"
+		})
+	})	
+	.catch(err => {
+		res.json({
+			res: false
+		})
+		console.error(err)
+	})
+})
+
 app.post('/message/send', (req, res) => {
      let message = req.body
      chatkit.sendMessage({
@@ -117,8 +164,8 @@ app.post('/message/send', (req, res) => {
 		roomId: message.roomId,
 		text: message.message,
      })
-	.then(res => {
-	   console.log('sent message with id', res.id)
+	.then(response => {
+	   console.log('sent message with id', response.id)
 	   res.json({
 	        res: true,
 	        message: 'Mensaje enviado'
