@@ -45,6 +45,8 @@
 
 <script>
 
+import axios from 'axios'
+
 export default {
   name: "login",
   data() {
@@ -55,6 +57,9 @@ export default {
         password: ''
       }
     };
+  },
+  mounted(){
+    console.log(this.$router.currentRoute.name)
   },
   methods: {
 
@@ -75,6 +80,32 @@ export default {
       }
       
     },
+
+    async login(route){
+      await axios
+      .post(`${process.env.VUE_APP_API_TWO_URL}/api/login?_token=${process.env.VUE_APP_API_KEY_OPENTOK}`, {
+        username: this.user.username,
+        password: this.user.password,
+        _token: process.env.VUE_APP_API_KEY_OPENTOK
+      })
+      .then(res => {
+        if(res.data.code == 200){
+          this.$router.push({ name: route });
+        }else{
+          this.$toast.open({
+              message: 'Datos erroneos',
+              type: 'is-danger'
+          })
+        }
+      })
+      .catch(err => {
+        console.error(err)
+        this.$toast.open({
+            message: 'Error interno',
+            type: 'is-danger'
+        })
+      })
+    }
 
     
 

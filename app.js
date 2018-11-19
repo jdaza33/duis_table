@@ -20,6 +20,7 @@ const chatkit = new Chatkit.default({
 	key: 'eea44c7e-758b-4bd1-a80f-dc653bd998b6:wiY1M8QhAbrA+7xKV/eE72crcO3cA8W0BTCknb5jL2k=',
 })
 
+
 // Database
 let db = new Datastore({ filename: './data.db', autoload: true });
 
@@ -59,6 +60,15 @@ app.post('/paint', (req, res) => {
 });
 
 //Chatkit pusher
+
+app.post('/chatkit/token', (req, res) => {
+	const authData = chatkit.authenticate({
+		userId: req.query.user_id
+	});
+
+	res.status(authData.status)
+		.send(authData.body);
+})
 
 app.post('/user/create', (req, res) => {
      let user = req.body
@@ -212,7 +222,7 @@ app.post('/class/new', (req, res) => {
         if(err){
             console.log('ERROR', err)
         }
-        console.log('Clase creada --> ', doc)
+        //console.log('Clase creada --> ', doc)
         res.json({
         	res: true
         })
@@ -222,7 +232,7 @@ app.post('/class/new', (req, res) => {
 app.get('/class', async (req, res) => {
     await db.find({}, (err, doc) => {
         if(err) console.log(err)
-        console.log(doc);
+        //console.log(doc);
         res.json({
             res: true,
             class: doc

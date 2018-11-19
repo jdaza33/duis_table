@@ -119,6 +119,7 @@ import Subscriber from "@/components/opentok/Subscriber.vue";
 import Chat from "@/components/views/Chat.vue";
 import pusher from "pusher";
 import axios from "@/config/axios.js";
+import axioss from "axios";
 import msDrawBoard from "msdrawboard";
 
 import { VueEditor, Quill } from "vue2-editor";
@@ -324,8 +325,7 @@ export default {
   },
 
   mounted() {
-    
-    this.addTabCode()
+    this.addTabCode();
 
     //Acceso a la video llamada
     this.accessVideCam();
@@ -335,14 +335,17 @@ export default {
    */
 
     this.chatManager = new ChatManager({
-      instanceLocator: "v1:us1:8bd51fc5-238c-41f3-9cf4-d998d087171b",
-      //instanceLocator: "v1:us1:8521a6b1-9fd7-432f-a90f-03f772f111e0",
+      //instanceLocator: "v1:us1:8bd51fc5-238c-41f3-9cf4-d998d087171b",
+      instanceLocator: process.env.VUE_APP_API_INSTANCE_LOCATOR,
       userId: this.$cookie.get("userId").toString(),
       tokenProvider: new TokenProvider({
         url:
-          "https://us1.pusherplatform.io/services/chatkit_token_provider/v1/8bd51fc5-238c-41f3-9cf4-d998d087171b/token"
+          //"https://us1.pusherplatform.io/services/chatkit_token_provider/v1/8bd51fc5-238c-41f3-9cf4-d998d087171b/token"
+          `${process.env.VUE_APP_API_URL}/chatkit/token`
       })
     });
+
+    console.log('chatManager', this.chatManager)
 
     this.chatManager
       .connect()
@@ -442,11 +445,11 @@ export default {
 
     setCodeEdit(op, index) {
       if (op == "-") {
-        this.listEditCode[index].sizeCode -= 1
+        this.listEditCode[index].sizeCode -= 1;
         //this.sizeCode -= 1;
       }
       if (op == "+") {
-        this.listEditCode[index].sizeCode += 1
+        this.listEditCode[index].sizeCode += 1;
         //this.sizeCode += 1;
       }
     },
@@ -511,7 +514,7 @@ export default {
       this.$forceUpdate();
     },
 
-    showPublish() {
+    async showPublish() {
       if (this.isPublish == false) {
         this.statusPublisher[this.contPublisher] = true;
 
@@ -530,6 +533,19 @@ export default {
 
         this.isPublish = true;
         this.contPublisher += 1;
+
+        await axioss
+          .post(
+            `${process.env.VUE_APP_API_TWO_URL}/api/startarchive/${
+              this.sessionId
+            }?_token=${process.env.VUE_APP_API_KEY_OPENTOK}`
+          )
+          .then(res => {
+            console.log("OK", res);
+          })
+          .catch(err => {
+            console.log("Error", err);
+          });
       } else {
         this.session.unpublish(this.publisher);
         this.publisher = null;
@@ -537,6 +553,19 @@ export default {
         this.isPublishVideo = true;
         this.isPublishAudio = true;
         this.statusPublisher[this.contPublisher - 1] = true;
+
+        await axioss
+          .post(
+            `${process.env.VUE_APP_API_TWO_URL}/api/stoparchive/${
+              this.sessionId
+            }?_token=${process.env.VUE_APP_API_KEY_OPENTOK}`
+          )
+          .then(res => {
+            console.log("OK", res);
+          })
+          .catch(err => {
+            console.log("Error", err);
+          });
       }
       this.$forceUpdate();
     },
@@ -594,10 +623,10 @@ export default {
 .CodeMirror {
 }
 
-.space-right{
+.space-right {
   margin-right: 20px;
 }
-.space-min-right{
+.space-min-right {
   margin-right: 10px;
 }
 </style>
