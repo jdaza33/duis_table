@@ -8,6 +8,13 @@
                             <vue-editor v-model="textEdit" @keyup.native="postEditText()" 
                             @selection-change="postEditText()" class=""
                             :editorToolbar="toolbarEditText" ref="editor" ></vue-editor>
+                            <br>
+                            <a class="button is-vcentered is-success is-rounded" @click="saveEditText()" target="_blank">
+                              <span class="icon">
+                                <i class="fas fa-save"></i>
+                              </span>
+                              <span>Guardar Texto</span>
+                            </a>
                          </b-tab-item>
                          <b-tab-item label="Editor de Codigo" icon="code" icon-pack="fas">
                            
@@ -35,17 +42,23 @@
                                       <i class="fas fa-search-minus"></i>
                                     </span>
                                   </a>
-                                  <a class="button" @click="setCodeEdit('+', index)">
+                                  <a class="button space-right" @click="setCodeEdit('+', index)">
                                     <span class="icon is-small">
                                       <i class="fas fa-search-plus"></i>
                                     </span>
                                   </a>
+                                  <a class="button is-primary is-outlined" @click="saveCode(index)">
+                                    <span class="icon is-small">
+                                      <i class="fas fa-save"></i>
+                                    </span>
+                                  </a>
                                   
-                                </b-field>
+                              </b-field>
                               <codemirror v-model="item.codeEdit" :options="item.cmOptions" 
                               :style="`font-size: ${item.sizeCode}px;`"
                               @keyup.native="postCode(index)">
                               </codemirror>
+                              
                              </b-tab-item>
 
                              <!--<b-tab-item icon="plus" icon-pack="fas" @change="addTabCode()"></b-tab-item>-->
@@ -204,7 +217,7 @@ export default {
         publishVideo: true,
         videoSource: true,
         height: "120px",
-        width: "90%"
+        width: "100%"
       },
       isPublishVideo: true,
       isPublishAudio: true,
@@ -335,13 +348,13 @@ export default {
    */
 
     this.chatManager = new ChatManager({
-      //instanceLocator: "v1:us1:8bd51fc5-238c-41f3-9cf4-d998d087171b",
-      instanceLocator: process.env.VUE_APP_API_INSTANCE_LOCATOR,
+      instanceLocator: "v1:us1:8bd51fc5-238c-41f3-9cf4-d998d087171b",
+      //instanceLocator: process.env.VUE_APP_API_INSTANCE_LOCATOR,
       userId: this.$cookie.get("userId").toString(),
       tokenProvider: new TokenProvider({
         url:
-          //"https://us1.pusherplatform.io/services/chatkit_token_provider/v1/8bd51fc5-238c-41f3-9cf4-d998d087171b/token"
-          `${process.env.VUE_APP_API_URL}/chatkit/token`
+          "https://us1.pusherplatform.io/services/chatkit_token_provider/v1/8bd51fc5-238c-41f3-9cf4-d998d087171b/token"
+          //`${process.env.VUE_APP_API_URL}/chatkit/token`
       })
     });
 
@@ -585,6 +598,14 @@ export default {
     },
     setCode(data) {
       this.listEditCode = data;
+    },
+
+    saveEditText(){
+      console.log('error al descargar')
+    },
+
+    saveCode(){
+
     }
   }
 };

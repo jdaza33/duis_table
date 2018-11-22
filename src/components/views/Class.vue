@@ -5,7 +5,8 @@
         <!--<p class="title is-6 has-text-centered">Menu</p>-->
         <div class="card center">
           <div class="card-content">
-            <a @click="isModalClassActive = true" class="button is-large is-vcentered is-success is-outlined ismenu">
+            <a @click="role == 'teacher' ? isModalClassActive = true : notifyStudent('W001')" 
+            class="button is-large is-vcentered is-success is-outlined ismenu">
               <span class="icon is-large">
                 <i class="fas fa-plus-circle"></i>
               </span>
@@ -33,10 +34,10 @@
                 </a>
               </div>
               <div class="card-content">
-                <strong>Tema: </strong>{{i.topic}} <br>
-                <strong>Profesor(a): </strong>{{i.teacher}} <br>
+                <strong>Tema: </strong>{{i.theme}} <br>
+                <strong>Profesor(a): </strong>{{i.teacher_name}} <br>
                 <strong>Fecha inicio: </strong> {{i.date_start.substring(0,10)}} <br>
-                <strong>Fecha fin: </strong> {{i.date_end.substring(0,10)}}
+                <strong>Fecha fin: </strong> {{i.due_date.substring(0,10)}}
               </div>
               <div class="card-footer">
                 <a @click="assignClass(i._id ,i.sessionId, i.token)" class="card-footer-item"><strong>Tomar esta clase..</strong></a>
@@ -60,6 +61,8 @@
 
 import axios from '@/config/axios.js'
 import ModalClass from '@/components/views/ModalClass';
+import notify from '@/config/notify.js'
+import service from '@/services/class.js'
 
 
   export default {
@@ -69,7 +72,8 @@ import ModalClass from '@/components/views/ModalClass';
 
         //Config Class
         dataClass: {},
-        today: new Date
+        today: new Date,
+        role: this.$cookie.get('role')
       }
     },
 
@@ -94,10 +98,14 @@ import ModalClass from '@/components/views/ModalClass';
       },
 
       assignClass(idClass, sessionId, token){
-        this.$cookie.set('classId', idClass, { expires: '1D' })
-        this.$cookie.set('sessionId', sessionId, { expires: '1D' })
-        this.$cookie.set('token', token, { expires: '1D' })
+        this.$cookie.set('classId', idClass, { expires: '3h' })
+        this.$cookie.set('sessionId', sessionId, { expires: '3h' })
+        this.$cookie.set('token', token, { expires: '3h' })
         this.$router.push({ name: 'tablero' })
+      },
+
+      notifyStudent(code){
+        notify(this,code)
       }
 
     },

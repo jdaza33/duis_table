@@ -76,7 +76,7 @@ export default {
 
       axios
         .post("/message/send", {
-          roomId: "19373269",
+          roomId: "19374073",
           userId: this.$cookie.get("userId").toString(),
           message: message.data.text
         })

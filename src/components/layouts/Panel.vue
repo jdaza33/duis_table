@@ -15,52 +15,28 @@
       </div>
 
       <div id="nav-phone" class="navbar-menu">
-         <!--<div class="navbar-start">
-            <a class="navbar-item">
-               <div class="field is-grouped">
-                  <p class="control">
-                     <a class="button is-small is-vcentered is-primary is-outlined is-rounded">
-                     <span class="icon">
-                        <i class="fas fa-search"></i>
-                     </span>
-                     <span>
-                        Consultar
-                     </span>
-                     </a>
-                  </p>
-                  <p class="control">
-                     <a class="button is-small is-vcentered is-primary is-outlined is-rounded">
-                     <span class="icon">
-                        <i class="fas fa-plus"></i>
-                     </span>
-                     <span>
-                        Insertar
-                     </span>
-                     </a>
-                  </p>
-               </div>
-            </a>
-         </div>-->
-          
          <div class="navbar-end">
-            <!--Photo user -->
-            <!--<div class="center">
-               <figure class="image is-48x48 border">
-               <img src="img/chico.svg" class="is-rounded">
-               </figure>
-            </div>-->
-            
-
             <b-dropdown  position="is-bottom-left">
                <a class="navbar-item is-info" slot="trigger">
                      <span>{{username}}</span>
                      <b-icon icon="caret-down" pack="fas"></b-icon>
                </a>
-               <b-dropdown-item value="logout" @click="reportAbuse()">
+               <!--<div v-if="isRoute == 'tablero'">
+                 <b-dropdown-item @click="reportAbuse()">
+                        <b-icon icon="bullhorn" pack="fas"></b-icon>
+                        Salir de la clase
+                  </b-dropdown-item>
+                  <b-dropdown-item @click="reportAbuse()">
+                        <b-icon icon="bullhorn" pack="fas"></b-icon>
+                        Finalizar la clase
+                  </b-dropdown-item>
+               </div>-->
+               
+               <b-dropdown-item @click="reportAbuse()">
                      <b-icon icon="bullhorn" pack="fas"></b-icon>
                      Reportar Abuso
                </b-dropdown-item>
-               <b-dropdown-item value="logout" @click="logout()">
+               <b-dropdown-item @click="logout()">
                      <b-icon icon="sign-out-alt" pack="fas"></b-icon>
                      Salir
                </b-dropdown-item>
@@ -74,6 +50,9 @@
     <div class="is-main-content">
 
       <router-view></router-view>
+      <b-modal :active.sync="isModalReportAbuseActive" has-modal-card>
+          <modal-report-abuse></modal-report-abuse>
+      </b-modal>
 
     </div>
 
@@ -94,6 +73,8 @@
 
 <script>
 
+import ModalReportAbuse from '@/components/views/ModalReportAbuse'
+
 export default {
   data() {
     //this.$router.push({ name: 'user' });
@@ -108,18 +89,34 @@ export default {
       userInfoData: '',
 
       right: null,
-      menus: [{ title: 'Cerrar Sesión' }]
+      menus: [{ title: 'Cerrar Sesión' }],
+
+      isModalReportAbuseActive: false,
+
+      isRoute: this.$router.currentRoute.name
 
     };
   },
+
+  mounted(){
+    //console.log(this.$router.currentRoute.name)
+  },
+
+  components: {ModalReportAbuse},
   methods: {
     logout() {
       this.$cookie.delete('userId')
       this.$cookie.delete('username')
+      this.$cookie.delete('role')
+      this.$cookie.delete('name')
 
       this.$cookie.delete('sessionId')
       this.$cookie.delete('token')
       this.$cookie.delete('classId')
+
+      this.$cookie.delete('time_h')
+      this.$cookie.delete('time_m')
+      this.$cookie.delete('time_s')
 
       this.go('login');
     },
@@ -150,7 +147,7 @@ export default {
     },
 
     reportAbuse(){
-      
+      this.isModalReportAbuseActive = true
     }
   },
 

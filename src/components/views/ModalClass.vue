@@ -23,7 +23,7 @@
                   icon="chalkboard-teacher"
                   maxlength="25"
                   min="10"
-                  v-model="classroom.topic"
+                  v-model="classroom.theme"
                   rounded>
               </b-input>
 
@@ -33,7 +33,7 @@
                   icon="graduation-cap"
                   maxlength="20"
                   min="10"
-                  v-model="classroom.teacher"
+                  v-model="classroom.teacher_name"
                   rounded>
               </b-input>
 
@@ -51,7 +51,7 @@
                   icon="calendar-alt"
                   icon-pack="fas"
                   rounded
-                  v-model="classroom.date_end"
+                  v-model="classroom.due_date"
                   disabled>
               </b-datepicker>
             </div>
@@ -69,6 +69,9 @@
 <script>
 import axios from '@/config/axios.js'
 import axiostwo from 'axios'
+import service from '@/services/class.js'
+import notify from '@/config/notify.js'
+
 export default {
   data() {
     const today = new Date()
@@ -77,12 +80,13 @@ export default {
       isFullPage: true,
       classroom: {
         name: '',
-        teacher: '',
-        topic: '',
+        teacher_id: this.$cookie.get('userId'),
+        teacher_name: this.$cookie.get('name'),
+        theme: '',
         token: '',
         sessionId: '',
         date_start: new Date(),
-        date_end: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1)
+        due_date: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1)
       }
     };
   },
@@ -109,7 +113,7 @@ export default {
     getKeys(){
       this.isLoading = true
       axiostwo
-      .get(`${process.env.VUE_APP_API_TWO_URL}/api/sessionid?_token=${process.env.VUE_APP_API_KEY_OPENTOK}&user_id=${this.$cookie.get('userId')}&session_role=m`)
+      .get(`${process.env.VUE_APP_API_TWO_URL}/api/sessionid?_token=${process.env.VUE_APP_API_KEY_OPENTOK}&user_id=${this.$cookie.get('userId')}&session_role=m&archive_mode=m`)
       .then(res => {
         this.isLoading = false
         this.classroom.sessionId = res.data.session_id

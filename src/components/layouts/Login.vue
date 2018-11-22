@@ -31,7 +31,7 @@
         </b-field>
 
         <div class="has-text-centered">
-          <a @click="go('class')" class="button is-vcentered is-primary is-outlined is-rounded">Iniciar Sesión</a>
+          <a @click="login()" class="button is-vcentered is-primary is-outlined is-rounded">Iniciar Sesión</a>
         </div>
       </section>
     </div>
@@ -46,6 +46,9 @@
 <script>
 
 import axios from 'axios'
+import service from '@/services/login.js'
+import notify from '@/config/notify.js'
+
 
 export default {
   name: "login",
@@ -59,52 +62,20 @@ export default {
     };
   },
   mounted(){
-    console.log(this.$router.currentRoute.name)
+    //console.log(this.$router.currentRoute.name)
   },
   methods: {
 
-    go(route) {
-      if(this.user.username == 'profesor' && this.user.password == '12345'){
-        this.$cookie.set('userId', '1', { expires: '1D' })
-        this.$cookie.set('username', 'profesor', { expires: '1D' })
-        this.$router.push({ name: route });
-      }else if(this.user.username == 'alumno' && this.user.password == '12345'){
-        this.$cookie.set('userId', '2', { expires: '1D' })
-        this.$cookie.set('username', 'alumno', { expires: '1D' })
-        this.$router.push({ name: route });
-      }else{
-        this.$toast.open({
-          message: '[Error] usuario o clave incorrecta',
-          type: 'is-danger'
-        })
+    async login(){
+      let data = await service(this.user.username, this.user.password)
+      notify(this,data.code)
+      if(data.code.split('')[0] == 'S'){
+        this.$cookie.set('userId', data.data.id, { expires: '1D' })
+        this.$cookie.set('username', this.user.username, { expires: '1D' })
+        this.$cookie.set('role', data.data.role, { expires: '1D' })
+        this.$cookie.set('name', data.data.name, { expires: '1D' })
+        this.$router.push({ name: 'class' });
       }
-      
-    },
-
-    async login(route){
-      await axios
-      .post(`${process.env.VUE_APP_API_TWO_URL}/api/login?_token=${process.env.VUE_APP_API_KEY_OPENTOK}`, {
-        username: this.user.username,
-        password: this.user.password,
-        _token: process.env.VUE_APP_API_KEY_OPENTOK
-      })
-      .then(res => {
-        if(res.data.code == 200){
-          this.$router.push({ name: route });
-        }else{
-          this.$toast.open({
-              message: 'Datos erroneos',
-              type: 'is-danger'
-          })
-        }
-      })
-      .catch(err => {
-        console.error(err)
-        this.$toast.open({
-            message: 'Error interno',
-            type: 'is-danger'
-        })
-      })
     }
 
     
