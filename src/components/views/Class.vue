@@ -37,10 +37,10 @@
                 <strong>Tema: </strong>{{i.theme}} <br>
                 <strong>Profesor(a): </strong>{{i.teacher_name}} <br>
                 <strong>Fecha inicio: </strong> {{i.date_start.substring(0,10)}} <br>
-                <strong>Fecha fin: </strong> {{i.due_date.substring(0,10)}}
+                <!--<strong>Fecha fin: </strong> {{i.due_date.substring(0,10)}}-->
               </div>
               <div class="card-footer">
-                <a @click="assignClass(i._id ,i.sessionId, i.token)" class="card-footer-item"><strong>Tomar esta clase..</strong></a>
+                <a @click="assignClass(i._id ,i.sessionId, i.token, i.roomIdChatkit)" class="card-footer-item"><strong>Ir a la clase</strong></a>
               </div>
             </div>
           </div>
@@ -54,92 +54,117 @@
       </b-modal>
 
     </div>
+    <b-loading :is-full-page="isFullPage" :active.sync="isLoading"></b-loading>
   </div>
 </template>
 
 <script>
-
-import axios from '@/config/axios.js'
-import ModalClass from '@/components/views/ModalClass';
-import notify from '@/config/notify.js'
+import axios from "@/config/axios.js";
+import ModalClass from "@/components/views/ModalClass";
+import notify from "@/config/notify.js";
 import service from '@/services/class.js'
 
+export default {
+  data() {
+    return {
+      isModalClassActive: false,
 
-  export default {
-    data(){
-      return{
-        isModalClassActive: false,
+      //Config Class
+      dataClass: {},
+      today: new Date(),
+      role: this.$cookie.get("role"),
 
-        //Config Class
-        dataClass: {},
-        today: new Date,
-        role: this.$cookie.get('role')
-      }
-    },
+      isFullPage: true,
+      isLoading: false
+    };
+  },
 
-    components: {ModalClass},
+  components: { ModalClass },
 
-    methods: {
-
-      async getClass(){
-        await axios
-        .get('/class')
+  methods: {
+    async getClass() {
+      await axios
+        .get("/class")
         .then(res => {
-          if(res.data.res){
-            this.dataClass = res.data.class
+          if (res.data.res) {
+            this.dataClass = res.data.class;
           }
         })
         .catch(err => {
-          this.$toast.open({
-              message: '[Error] al consultar clases.',
-              type: 'is-danger'
-            })
-        })
-      },
+          console.log(err)
+          notify(this, 'E004')
+        });
+    },
 
-      assignClass(idClass, sessionId, token){
-        this.$cookie.set('classId', idClass, { expires: '3h' })
-        this.$cookie.set('sessionId', sessionId, { expires: '3h' })
-        this.$cookie.set('token', token, { expires: '3h' })
-        this.$router.push({ name: 'tablero' })
-      },
+    async assignClass(idClass, sessionId, token, roomIdChatkit) {
 
-      notifyStudent(code){
-        notify(this,code)
+      this.isLoading = true
+
+      let temp = await service({
+        id: roomIdChatkit,
+        userId: this.$cookie.get('userId').toString(),
+        userName: this.$cookie.get('name').toString()
+      }, 'addUserChatkit')
+
+      if(temp.code.split('')[0] == 'I'){
+        this.$cookie.set("classId", idClass, { expires: "12h" });
+        this.$cookie.set("sessionId", sessionId, { expires: "12h" });
+        this.$cookie.set("token", token, { expires: "12h" });
+
+        this.$cookie.set("isClass", true, { expires: "12h" });
+
+        this.$cookie.set("isTime", false, { expires: "12h" });
+        this.$cookie.set("time_h", 0, { expires: "12h" });
+        this.$cookie.set("time_m", 0, { expires: "12h" });
+        this.$cookie.set("time_s", 0, { expires: "12h" });
+
+        this.$cookie.set("videoShared", 'N', { expires: "12h" });
+        this.$cookie.set("audioShared", 'N', { expires: "12h" });
+
+        this.$cookie.set("roomIdChatkit", roomIdChatkit, { expires: "12h" });
+
+        this.$router.push({ name: "tablero" });
+        this.isLoading = false
+      }else{
+        this.isLoading = false
       }
-
+      
+      
     },
 
-    mounted(){
-      this.getClass()
-    },
-    create(){
+    notifyStudent(code) {
+      notify(this, code);
+    }
+  },
 
-    },
-    watch: {
-      isModalClassActive: function() {
-        this.getClass()
-      }
+  mounted() {
+    this.getClass();
+  },
+  create() {},
+  watch: {
+    isModalClassActive: function() {
+      this.getClass();
     }
   }
+};
 </script>
 
 <style scoped>
-  .container {
-    height: 100%;
-    margin: 0;
-    padding: 0px 30px 0px 30px;
-  }
-  .center {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  .ismenu{
-    margin-bottom: 0.5em;
-    margin-top: 0.3em;
-  }
-  .class{
-    margin: 0 0.5em 0.5em 0.5em;
-  }
+.container {
+  height: 100%;
+  margin: 0;
+  padding: 0px 30px 0px 30px;
+}
+.center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.ismenu {
+  margin-bottom: 0.5em;
+  margin-top: 0.3em;
+}
+.class {
+  margin: 0 0.5em 0.5em 0.5em;
+}
 </style>

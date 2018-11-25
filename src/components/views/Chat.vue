@@ -19,10 +19,10 @@
 
 <script>
 import axios from "@/config/axios.js";
+import { ChatManager, TokenProvider } from "@pusher/chatkit-client";
 
 export default {
   name: "app",
-  props: ["messageList"],
   data() {
     return {
       participants: [
@@ -31,15 +31,12 @@ export default {
           name: "Clase",
           imageUrl: "https://avatars3.githubusercontent.com/u/1915989?s=230&v=4"
         }
-      ], 
-      titleImageUrl: "img/duis-min.png", 
-      /*messageList: [
-        { type: "text", author: `me`, data: { text: `Epalee!` } },
-        { type: "text", author: `user1`, data: { text: `Chao` } },
-        { type: "text", author: `me`, data: { text: `:((` } }
-      ], */ newMessagesCount: 0,
-      isChatOpen: false, 
-      showTypingIndicator: "", 
+      ],
+      titleImageUrl: "img/duis-min.png",
+      messageList: [],
+      newMessagesCount: 0,
+      isChatOpen: false,
+      showTypingIndicator: "",
       colors: {
         header: {
           bg: "#e65c00",
@@ -63,20 +60,20 @@ export default {
           bg: "#f4f7f9",
           text: "#565867"
         }
-      }, // specifies the color scheme for the component
-      alwaysScrollToBottom: false // when set to true always scrolls the chat to the bottom when new events are in (new message, user starts typing...)
+      },
+      alwaysScrollToBottom: false,
+
+      //Chatkit
+      chatManager: "",
+      currentUser: null,
     };
   },
   methods: {
     sendMessage(text) {},
     onMessageWasSent(message) {
-      // called when the user sends a message
-
-      //this.messageList = [...this.messageList, message];
-
       axios
         .post("/message/send", {
-          roomId: "19374073",
+          roomId: this.$cookie.get('roomIdChatkit').toString(),
           userId: this.$cookie.get("userId").toString(),
           message: message.data.text
         })
@@ -88,14 +85,66 @@ export default {
         });
     },
     openChat() {
-      // called when the user clicks on the fab button to open the chat
       this.isChatOpen = true;
       this.newMessagesCount = 0;
     },
     closeChat() {
-      // called when the user clicks on the botton to close the chat
       this.isChatOpen = false;
     }
+  },
+
+  mounted() {
+    /*
+    INICIO - CHATKIT
+   */
+
+    this.chatManager = new ChatManager({
+      instanceLocator: process.env.VUE_APP_API_INSTANCE_LOCATOR,
+      userId: this.$cookie.get("userId").toString(),
+      tokenProvider: new TokenProvider({
+        url:
+          `${process.env.VUE_APP_API_URL}/chatkit/token`
+      })
+    });
+
+    this.chatManager
+      .connect()
+      .then(currentUser => {
+        this.currentUser = currentUser;
+        currentUser.subscribeToRoom({
+          roomId: this.$cookie.get('roomIdChatkit').toString(),
+          hooks: {
+            onMessage: message => {
+              this.newMessagesCount = 0;
+              this.messageList.push({
+                type: "text",
+                author:
+                  message.senderId.toString() ==
+                  this.$cookie.get("userId").toString()
+                    ? "me"
+                    : "0",
+                data: {
+                  text: message.text
+                },
+                date: new Date()
+              });
+              /*for (let i in this.messageList) {
+                if (this.messageList[i].author != "me") {
+                  this.newMessagesCount += 1;
+                }
+              }*/
+              this.$forceUpdate();
+            }
+          }
+        });
+      })
+      .catch(err => {
+        console.log("Error on connection", err);
+      });
+
+    /*
+    FIN - CHATKIT
+   */
   }
 };
 </script>

@@ -18,27 +18,30 @@
          <div class="navbar-end">
             <b-dropdown  position="is-bottom-left">
                <a class="navbar-item is-info" slot="trigger">
-                     <span>{{username}}</span>
-                     <b-icon icon="caret-down" pack="fas"></b-icon>
+                  <span>{{username}}</span>
+                  <b-icon icon="caret-down" pack="fas"></b-icon>
                </a>
-               <!--<div v-if="isRoute == 'tablero'">
-                 <b-dropdown-item @click="reportAbuse()">
-                        <b-icon icon="bullhorn" pack="fas"></b-icon>
-                        Salir de la clase
+               <div v-if="isClass == true">
+                 <b-dropdown-item @click="backInClass()">
+                      <b-icon icon="door-open" pack="fas"></b-icon>
+                      Volver
                   </b-dropdown-item>
-                  <b-dropdown-item @click="reportAbuse()">
-                        <b-icon icon="bullhorn" pack="fas"></b-icon>
-                        Finalizar la clase
+               </div>
+               <div v-if="isClass == true && role == 'teacher'">
+                  <b-dropdown-item @click="finalizeClass()">
+                    <b-icon icon="graduation-cap" pack="fas"></b-icon>
+                      Finalizar clase
                   </b-dropdown-item>
-               </div>-->
+               </div>
+                  
                
                <b-dropdown-item @click="reportAbuse()">
-                     <b-icon icon="bullhorn" pack="fas"></b-icon>
-                     Reportar Abuso
+                  <b-icon icon="bullhorn" pack="fas"></b-icon>
+                  Reportar Abuso
                </b-dropdown-item>
                <b-dropdown-item @click="logout()">
-                     <b-icon icon="sign-out-alt" pack="fas"></b-icon>
-                     Salir
+                  <b-icon icon="sign-out-alt" pack="fas"></b-icon>
+                  Salir
                </b-dropdown-item>
             </b-dropdown>
          </div>
@@ -72,12 +75,12 @@
 </template>
 
 <script>
-
-import ModalReportAbuse from '@/components/views/ModalReportAbuse'
+import ModalReportAbuse from "@/components/views/ModalReportAbuse";
+import service from '@/services/finishclass.js'
+import notify from '@/config/notify.js'
 
 export default {
   data() {
-    //this.$router.push({ name: 'user' });
     return {
       drawer: true,
 
@@ -85,40 +88,50 @@ export default {
       isLoading: false,
       isFullPage: true,
 
-      userData: '',
-      userInfoData: '',
+      userData: "",
+      userInfoData: "",
+      role: this.$cookie.get('role'),
 
       right: null,
-      menus: [{ title: 'Cerrar Sesión' }],
+      menus: [{ title: "Cerrar Sesión" }],
 
       isModalReportAbuseActive: false,
 
-      isRoute: this.$router.currentRoute.name
+      isRoute: this.$router.currentRoute.name,
 
+      isClass: false,
+      timeClass: null
     };
   },
 
-  mounted(){
+  mounted() {
     //console.log(this.$router.currentRoute.name)
   },
 
-  components: {ModalReportAbuse},
+  components: { ModalReportAbuse },
   methods: {
     logout() {
-      this.$cookie.delete('userId')
-      this.$cookie.delete('username')
-      this.$cookie.delete('role')
-      this.$cookie.delete('name')
+      this.$cookie.delete("userId");
+      this.$cookie.delete("username");
+      this.$cookie.delete("role");
+      this.$cookie.delete("name");
 
-      this.$cookie.delete('sessionId')
-      this.$cookie.delete('token')
-      this.$cookie.delete('classId')
+      this.$cookie.delete("sessionId");
+      this.$cookie.delete("token");
+      this.$cookie.delete("classId");
 
-      this.$cookie.delete('time_h')
-      this.$cookie.delete('time_m')
-      this.$cookie.delete('time_s')
+      this.$cookie.delete("isTime");
+      this.$cookie.delete("time_h");
+      this.$cookie.delete("time_m");
+      this.$cookie.delete("time_s");
 
-      this.go('login');
+      this.$cookie.delete("videoShared");
+      this.$cookie.delete("audioShared");
+
+      this.$cookie.delete("isClass");
+
+      //this.go("login");
+      location.reload();
     },
 
     go(route) {
@@ -127,11 +140,11 @@ export default {
 
     //Metodo para abrir el menu en vista movil
     burger() {
-      let burger = document.querySelector('.burger');
-      let nav = document.querySelector('#' + burger.dataset.target);
+      let burger = document.querySelector(".burger");
+      let nav = document.querySelector("#" + burger.dataset.target);
 
-      burger.classList.toggle('is-active');
-      nav.classList.toggle('is-active');
+      burger.classList.toggle("is-active");
+      nav.classList.toggle("is-active");
     },
 
     isNotLoading() {
@@ -141,22 +154,83 @@ export default {
       //this.go('users')
     },
 
-    loadDataUser(){
-      this.username = this.$cookie.get('username')
-      this.userId = this.$cookie.get('userId')
+    loadDataUser() {
+      this.username = this.$cookie.get("username");
+      this.userId = this.$cookie.get("userId");
     },
 
-    reportAbuse(){
-      this.isModalReportAbuseActive = true
+    reportAbuse() {
+      this.isModalReportAbuseActive = true;
+    },
+
+    backInClass(){
+      this.$cookie.delete("sessionId");
+      this.$cookie.delete("token");
+      this.$cookie.delete("classId");
+
+      this.$cookie.delete("isTime");
+      this.$cookie.delete("time_h");
+      this.$cookie.delete("time_m");
+      this.$cookie.delete("time_s");
+
+      this.$cookie.delete("videoShared");
+      this.$cookie.delete("audioShared");
+
+      this.$cookie.set('isClass', false, { expires: '12h' })
+
+      this.go("class");
+      location.reload();
+      
+    },
+
+    async finalizeClass(){
+
+      let finish = {
+        session_id: this.$cookie.get('sessionId').toString(),
+        duration_time: `${this.$cookie.get('time_h').toString()}:${this.$cookie.get('time_m').toString()}:${this.$cookie.get('time_s').toString()}`,
+        video_shared: this.$cookie.get('videoShared'),
+        audio_shared: this.$cookie.get('audioShared'),
+        user_one_id: this.$cookie.get('userId'),
+        user_two_id: '0'
+      }
+
+      let temp = await service({
+        data: finish,
+        id: this.$cookie.get('classId')
+      })
+      console.log(temp)
+      notify(this, temp.code)
+
+      if(temp.code.split('')[0] == 'S'){
+        this.$cookie.delete("sessionId");
+        this.$cookie.delete("token");
+        this.$cookie.delete("classId");
+
+        this.$cookie.delete("isTime");
+        this.$cookie.delete("time_h");
+        this.$cookie.delete("time_m");
+        this.$cookie.delete("time_s");
+
+        this.$cookie.delete("videoShared");
+        this.$cookie.delete("audioShared");
+
+        this.$cookie.set('isClass', false, { expires: '12h' })
+
+        this.go("class");
+        location.reload();
+      }
+
     }
   },
 
   created() {
     this.loadDataUser();
-  },
-  watch: {
-    //$route: "loadDataUser"
+
+    this.timeClass = setInterval(() => {
+      this.isClass = JSON.parse(this.$cookie.get("isClass"));
+    }, 1000);
   }
+  
 };
 </script>
 
@@ -244,8 +318,8 @@ hr {
   align-items: center;
 }
 
-.titlecolor{
-  color:#e65c00;
+.titlecolor {
+  color: #e65c00;
 }
 </style>
 

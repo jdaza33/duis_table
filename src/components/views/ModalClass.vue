@@ -85,31 +85,21 @@ export default {
         theme: '',
         token: '',
         sessionId: '',
+        roomIdChatkit: '',
         date_start: new Date(),
         due_date: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1)
       }
     };
   },
   methods: {
-    save(){
-      axios
-      .post('/class/new', this.classroom)
-      .then(res => {
-        if(res.data.res){
-          this.$toast.open({
-            message: '[OK] Clase creada con exito',
-            type: 'is-success'
-          })
-          this.$parent.close()
-        }
-      })
-      .catch(err => {
-        this.$toast.open({
-            message: '[Error] No se pudo crear la clase',
-            type: 'is-danger'
-          })
-      })
+    async save(){
+      this.isLoading = true
+      let temp = await service(this.classroom, 'postClass')
+      notify(this, temp.code)
+      this.isLoading = false
+      this.$parent.close()
     },
+
     getKeys(){
       this.isLoading = true
       axiostwo
@@ -123,32 +113,13 @@ export default {
         this.isLoading = false
         console.log(err)
       })
-      /*axiostwo(`${process.env.VUE_APP_API_TWO_URL}/api/sessionid?_token=${process.env.VUE_APP_API_KEY_OPENTOK}&user_id=${this.$cookie.get('userId')}&session_role=m`, {
-        method: 'GET',
-        mode: 'no-cors',
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Content-Type': 'application/json',
-        },
-        withCredentials: true,
-        credentials: 'same-origin',
-      }).then(response => {
-        this.isLoading = false
-        this.classroom.sessionId = res.data.sessionId
-        this.classroom.token = res.data.token_id
-      }).catch(err => {
-        this.isLoading = false
-        console.log(err)
-      })*/
       
     }
   },
   mounted(){
     this.getKeys()
-  },
-  create(){
-    //this.getKeys()
   }
+
 };
 </script>
 

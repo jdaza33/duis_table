@@ -1,88 +1,142 @@
 
-export default async (user) => {
+export default async (room, op) => {
 
-     const axios = require('axios')
-     const token = `?_token=${process.env.VUE_APP_API_KEY_OPENTOK}`
+     const axios = require('axios');
 
-     let data = null
-     let code = null
+     let data = null;
+     let code = null;
 
-     if(user.role == 'student'){
-          let temp = await getClassForStudents()
-          data = temp.data
-          code = temp.code
-     }
-
-     if (user.role == 'teacher') {
-          let temp = await getClassForTeachers(user.id)
-          data = temp.data
-          code = temp.code
-     }
-
-     if (user.role == 'teacher' && user.data != null) {
-          let temp = await insertClass(user.data)
-          code = temp
-     }
-
-
-     let getClassForStudents = async () => {
+     let postClass = async (room) => {
           let code = null
           let data = null
 
           await axios
-               .get(`${process.env.VUE_APP_API_TWO_URL}/api/get/lessons${token}`)
-               .then(res => {
-                    console.log(res.data.response)
-                    if (res.data.code == 200) {
-                         code = 'I002'
-                         data = res.data.response
-                    }
-               })
-               .catch(err => {
-                    console.log(err)
-                    code = 'E004'
-               })
+          .post(`${process.env.VUE_APP_API_URL}/class/new`, room)
+          .then(res => {
+               if (res.data.res) {
+                    code = 'S002'
+               }
+          })
+          .catch(err => {
+               console.log(err)
+               code = 'E005'
+          })
 
           return {code, data}
      }
 
-     let getClassForTeachers = async (userId) => {
-          let code = null
-          let data = null
+     let getUserByChatkit = async (userId) => {
+          let response = null
 
           await axios
-               .get(`${process.env.VUE_APP_API_TWO_URL}/api/get/get_by_teacher/lesson/${userId}${token}`)
+               .get(`${process.env.VUE_APP_API_URL}/user/${userId}`)
                .then(res => {
-                    console.log(res.data.response)
-                    if (res.data.code == 200) {
-                         code = 'I002'
-                         data = res.data.response
-                    }
+                    response = res.data.res
                })
                .catch(err => {
                     console.log(err)
-                    code = 'E004'
                })
 
-          return { code, data }
+          return response
      }
 
-     let insertClass = async (data) => {
+     let createUserByChatkit = async (userId, name) => {
+          let response = null
+
+          await axios
+               .post(`${process.env.VUE_APP_API_URL}/user/create`, {
+                    id: userId,
+                    name
+               })
+               .then(res => {
+                    response = res.data.res
+               })
+               .catch(err => {
+                    console.log(err)
+               })
+
+          return response
+     }
+
+     let createRoomByChatkit = async (userId, name) => {
+          let response = null
+          let roomId = null
+
+          await axios
+               .post(`${process.env.VUE_APP_API_URL}/room/new`, {
+                    userId,
+                    name
+               })
+               .then(res => {
+                    response = res.data.res
+                    roomId = res.data.roomId
+               })
+               .catch(err => {
+                    console.log(err)
+               })
+
+          return {response, roomId}
+     }
+
+     let addUserRoomByChatkit = async (userId, roomId) => {
           let code = null
 
           await axios
-               .post(`${process.env.VUE_APP_API_TWO_URL}/api/create/lesson${token}`, data)
+               .post(`${process.env.VUE_APP_API_URL}/room/add/users`, {
+                    userId,
+                    roomId
+               })
                .then(res => {
-                    if (res.data.code == 200) {
-                         code = 'S002'
+                    if (res.data.res){
+                         code = 'I005'
                     }
                })
                .catch(err => {
                     console.log(err)
-                    code = 'E004'
+                    code = 'E010'
                })
 
           return code
+     }
+
+     if (op == 'postClass') {
+          let isUserChatkit = await getUserByChatkit(room.teacher_id)
+          if(isUserChatkit){
+               let createRoomChatkit = await createRoomByChatkit(room.teacher_id, `Clase - ${room.name}`)
+               if(createRoomChatkit.response){
+                    room.roomIdChatkit = createRoomChatkit.roomId
+                    let temp = await postClass(room);
+                    data = temp.data;
+                    code = temp.code;
+               }
+          }else{
+               let createUserChatkit = await createUserByChatkit(room.teacher_id, room.teacher_name)
+               if (createUserChatkit){
+                    let createRoomChatkit = await createRoomByChatkit(room.teacher_id, `Clase - ${room.name}`)
+                    if (createRoomChatkit.response) {
+                         room.roomIdChatkit = createRoomChatkit.roomId
+                         let temp = await postClass(room);
+                         data = temp.data;
+                         code = temp.code;
+                    }
+               }
+          }
+          
+     }
+
+     if (op == 'addUserChatkit'){
+          let isUserChatkit = await getUserByChatkit(room.userId)
+          if (isUserChatkit) {
+               let temp = await addUserRoomByChatkit(room.userId, room.id)
+               code =temp
+
+          } else {
+               let createUserChatkit = await createUserByChatkit(room.userId, room.userName)
+               if (createUserChatkit) {
+                    let temp = await addUserRoomByChatkit(room.userId, room.id)
+                    code = temp
+               }
+          }
      }
 
      return {

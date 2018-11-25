@@ -15,7 +15,8 @@
                 maxlength="12"
                 min="5"
                 rounded
-                v-model="user.username">
+                v-model="user.username"
+                @keyup.enter.native="login()">
             </b-input>
         </b-field>
 
@@ -26,7 +27,8 @@
                 icon="key"
                 password-reveal
                 rounded
-                v-model="user.password">
+                v-model="user.password"
+                @keyup.enter.native="login()">
             </b-input>
         </b-field>
 
@@ -40,12 +42,12 @@
     <div  class="interactive-bg column master submaster">
       <img class="login-logo" src="img/duis-full.png">
     </div>
+    <b-loading :is-full-page="isFullPage" :active.sync="isLoading"></b-loading>
   </div>
 </template>
 
 <script>
 
-import axios from 'axios'
 import service from '@/services/login.js'
 import notify from '@/config/notify.js'
 
@@ -58,7 +60,9 @@ export default {
       user: {
         username: '',
         password: ''
-      }
+      },
+      isFullPage: true,
+      isLoading: false
     };
   },
   mounted(){
@@ -67,6 +71,7 @@ export default {
   methods: {
 
     async login(){
+      this.isLoading = true
       let data = await service(this.user.username, this.user.password)
       notify(this,data.code)
       if(data.code.split('')[0] == 'S'){
@@ -74,8 +79,10 @@ export default {
         this.$cookie.set('username', this.user.username, { expires: '1D' })
         this.$cookie.set('role', data.data.role, { expires: '1D' })
         this.$cookie.set('name', data.data.name, { expires: '1D' })
+        this.$cookie.set('isClass', false, { expires: '1D' })
         this.$router.push({ name: 'class' });
       }
+      this.isLoading = false
     }
 
     

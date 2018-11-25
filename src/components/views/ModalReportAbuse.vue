@@ -37,7 +37,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import service from '@/services/abuse.js'
 import notify from '@/config/notify.js'
 
 export default {
@@ -54,24 +54,10 @@ export default {
     };
   },
   methods: {
-    save(){
-      axios
-      .post(`${process.env.VUE_APP_API_TWO_URL}/api/claim?_token=${process.env.VUE_APP_API_KEY_OPENTOK}`, this.abuse)
-      .then(res => {
-        if(res.data.code == 200){
-          this.$toast.open({
-            message: 'Reclamo enviado',
-            type: 'is-success'
-          })
-          this.$parent.close()
-        }
-      })
-      .catch(err => {
-        this.$toast.open({
-            message: 'No se pudo enviar el reclamo',
-            type: 'is-danger'
-          })
-      })
+    async save(){
+      let temp = await service(this.abuse)
+      notify(this, temp.code)
+      this.$parent.close()
     },
   }
 

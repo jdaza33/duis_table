@@ -4,6 +4,7 @@ const Pusher = require('pusher');
 const bodyParser = require('body-parser');
 const Datastore = require('nedb');
 const Chatkit = require('@pusher/chatkit-server')
+const fs = require('file-system')
 
 const port = process.env.PORT || 8020;
 
@@ -33,11 +34,11 @@ app.use(bodyParser.json());
 
 
 const pusher = new Pusher({
-     appId: PUSHER_APP_ID,
-     key: PUSHER_APP_KEY,
-     secret: PUSHER_APP_SECRET,
-     cluster: PUSHER_APP_CLUSTER,
-     encrypted: true
+	appId: PUSHER_APP_ID,
+	key: PUSHER_APP_KEY,
+	secret: PUSHER_APP_SECRET,
+	cluster: PUSHER_APP_CLUSTER,
+	encrypted: true
 });
 
 //Static
@@ -47,11 +48,11 @@ app.use(express.static(__dirname + '/dist/'));
 
 //Pusher 
 app.post('/pusher/auth', function (req, res) {
-     let socketId = req.body.socket_id;
-     let channel = req.body.channel_name;
-     console.log(socketId, channel)
-     var auth = pusher.authenticate(socketId, channel);
-     res.send(auth);
+	let socketId = req.body.socket_id;
+	let channel = req.body.channel_name;
+	console.log(socketId, channel)
+	var auth = pusher.authenticate(socketId, channel);
+	res.send(auth);
 });
 
 app.post('/paint', (req, res) => {
@@ -71,44 +72,44 @@ app.post('/chatkit/token', (req, res) => {
 })
 
 app.post('/user/create', (req, res) => {
-     let user = req.body
-     chatkit.createUser({
+	let user = req.body
+	chatkit.createUser({
 		id: user.id,
 		name: user.name,
-     })
-	.then(() => {
-	   console.log('User created successfully');
-	   res.json({
-	        res: true,
-	        message: 'Usuario creado'
-	   })
 	})
-	.catch((err) => {
-	   console.log(err);
-	   res.json({
-	        res: false,
-	        message: 'Usuario no creado',
-	        err
-	   })
-	});
+		.then(() => {
+			console.log('User created successfully');
+			res.json({
+				res: true,
+				message: 'Usuario creado'
+			})
+		})
+		.catch((err) => {
+			console.log(err);
+			res.json({
+				res: false,
+				message: 'Usuario no creado',
+				err
+			})
+		});
 })
 
 app.get('/user/:id', (req, res) => {
 	chatkit.getUser({
 		id: req.params.id,
 	})
-	.then(user => {
-		res.json({
-			res: true,
-			user
+		.then(user => {
+			res.json({
+				res: true,
+				user
+			})
 		})
-	})
-	.catch(err => {
-		res.json({
-			res: false
+		.catch(err => {
+			res.json({
+				res: false
+			})
+			console.error(err)
 		})
-		console.error(err)
-	})
 })
 
 /*app.get('/user/:id', async (req, res) => {
@@ -123,27 +124,27 @@ app.get('/user/:id', (req, res) => {
 })*/
 
 app.post('/room/new', (req, res) => {
-     let room = req.body
-     chatkit.createRoom({
+	let room = req.body
+	chatkit.createRoom({
 		creatorId: room.userId,
 		name: room.name,
-     })
-	.then(response => {
-	   console.log('Room created successfully');
-	   res.json({
-		   res: true,
-		   roomId: response.id,
-	        message: 'Clase creada'
-	   })
 	})
-	.catch((err) => {
-	   console.log(err);
-	   res.json({
-	        res: false,
-	        message: 'Clase no creada',
-	        err
-	   })
-	});
+		.then(response => {
+			console.log('Room created successfully');
+			res.json({
+				res: true,
+				roomId: response.id,
+				message: 'Clase creada'
+			})
+		})
+		.catch((err) => {
+			console.log(err);
+			res.json({
+				res: false,
+				message: 'Clase no creada',
+				err
+			})
+		});
 })
 
 app.post('/room/add/users', (req, res) => {
@@ -152,97 +153,138 @@ app.post('/room/add/users', (req, res) => {
 		roomId: data.roomId,
 		userIds: [data.userId]
 	})
-	.then(() => {
-		console.log('user added')
-		res.json({
-			res: true,
-			message: "Added"
+		.then(() => {
+			console.log('user added')
+			res.json({
+				res: true,
+				message: "Added"
+			})
 		})
-	})	
-	.catch(err => {
-		res.json({
-			res: false
+		.catch(err => {
+			res.json({
+				res: false
+			})
+			console.error(err)
 		})
-		console.error(err)
-	})
 })
 
 app.post('/message/send', (req, res) => {
-     let message = req.body
-     chatkit.sendMessage({
+	let message = req.body
+	chatkit.sendMessage({
 		userId: message.userId,
 		roomId: message.roomId,
 		text: message.message,
-     })
-	.then(response => {
-	   console.log('sent message with id', response.id)
-	   res.json({
-	        res: true,
-	        message: 'Mensaje enviado'
-	   })
 	})
-	.catch(err => {
-	   console.error(err)
-	   res.json({
-	        res: true,
-	        message: 'Mensaje enviado'
-	   })
-	})
+		.then(response => {
+			console.log('sent message with id', response.id)
+			res.json({
+				res: true,
+				message: 'Mensaje enviado'
+			})
+		})
+		.catch(err => {
+			console.error(err)
+			res.json({
+				res: true,
+				message: 'Mensaje enviado'
+			})
+		})
 })
 
 app.get('/message/received/:roomId', (req, res) => {
-     
-     chatkit.getRoomMessages({
+
+	chatkit.getRoomMessages({
 		roomId: req.params.roomId,
 		limit: 100,
-     })
-	.then(messages => {
-	   console.log('got last 10 messages')
-	   for (let m of messages) {
-	        renderMessage(m)
-	   }
-	   return chatkit.getRoomMessages({
-	        roomId: req.params.roomId,
-	        initialId: res[messages.length - 1].id,
-	   })
 	})
-	.then(moreMessages => {
-	   console.log('got the next 10 messages before them')
-	   for (let m of moreMessages) {
-	        renderMessage(m)
-	   }
-	})
-	.catch(err => console.error(err))
+		.then(messages => {
+			console.log('got last 10 messages')
+			for (let m of messages) {
+				renderMessage(m)
+			}
+			return chatkit.getRoomMessages({
+				roomId: req.params.roomId,
+				initialId: res[messages.length - 1].id,
+			})
+		})
+		.then(moreMessages => {
+			console.log('got the next 10 messages before them')
+			for (let m of moreMessages) {
+				renderMessage(m)
+			}
+		})
+		.catch(err => console.error(err))
 })
 
 //nedb
 app.post('/class/new', (req, res) => {
 	let data = req.body
-    db.insert(data, (err, doc) => {
-        if(err){
-            console.log('ERROR', err)
-        }
-        //console.log('Clase creada --> ', doc)
-        res.json({
-        	res: true
-        })
-    });
+	db.insert(data, (err, doc) => {
+		if (err) {
+			console.log('ERROR', err)
+		}
+		//console.log('Clase creada --> ', doc)
+		res.json({
+			res: true
+		})
+	});
 })
 
 app.get('/class', async (req, res) => {
-    await db.find({}, (err, doc) => {
-        if(err) console.log(err)
-        //console.log(doc);
-        res.json({
-            res: true,
-            class: doc
-        });
-    });
-  });
+	await db.find({}, (err, doc) => {
+		if (err) console.log(err)
+		//console.log(doc);
+		res.json({
+			res: true,
+			class: doc
+		});
+	});
+});
+
+app.delete('/class/:id', async (req, res) => {
+	await db.remove({ _id: req.params.id }, {}, (err, numRemoved) => {
+		if (err) {
+			console.log(err)
+			res.json({
+				res: false
+			})
+		}
+
+		console.log(`Registro eliminado --> ${numRemoved}`)
+		res.json({
+			res: true
+		})
+	})
+})
+
+
+//Download files
+app.post('/download', async (req, res) => {
+	let path = `${__dirname}/files`
+	let data = req.body
+	await fs.mkdir(path, (err) => {
+		if(err){
+			console.log(err)
+		}else{
+			fs.writeFile(`${path}/file.${data.ext}`, data.text, async (errr) => {
+				if (errr) {
+					console.log('Error al crear archivo', errr);
+				} else {
+					console.log('Archivo creado con exito');
+					res.download(`${path}/file.${data.ext}`, (err) => {
+						if(err) console.log(err)
+					})
+					//await fs.rmdirSync(path);
+				}
+			});
+		}
+	});
+	
+})
 
 
 //Output
 app.listen(port, () => {
-console.log(`Server on port ${port}`);
+	console.log(`Server on port ${port}`);
 });
 
